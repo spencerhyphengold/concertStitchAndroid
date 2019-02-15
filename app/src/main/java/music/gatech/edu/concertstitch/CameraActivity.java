@@ -32,7 +32,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
     private long lastTrackingPointTime;
     private List<TrackingPoint> trackingPoints;
     private List<List<TrackingPoint>> trackingPointSequences = new ArrayList();
-    File videoFile;
+    private File videoFile;
 
     private class TrackingPoint {
         long time;
@@ -88,12 +88,12 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
             recordBtn.setText("Record");
             camera.stopVideo();
         } else {
+            isRecording = true;
             String videoPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()
                     + "/concertStitch/testVideo.mp4";
             videoFile = new File(videoPath);
-            camera.takeVideo(videoFile);
-            isRecording = true;
             recordBtn.setText("Recording");
+            camera.takeVideo(videoFile);
         }
     }
 
