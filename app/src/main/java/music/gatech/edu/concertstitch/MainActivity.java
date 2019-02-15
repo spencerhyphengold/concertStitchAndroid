@@ -4,17 +4,16 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Camera;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -22,7 +21,6 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.io.File;
-import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
 
