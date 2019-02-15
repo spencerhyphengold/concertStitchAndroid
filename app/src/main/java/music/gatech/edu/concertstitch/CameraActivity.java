@@ -82,7 +82,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         return false;
     }
 
-    public void handleRecordBtnClick() {
+    private void handleRecordBtnClick() {
         if (isRecording) {
             isRecording = false;
             recordBtn.setText("Record");
@@ -97,7 +97,7 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    public boolean handleCameraKitTouch(MotionEvent motionEvent) {
+    private boolean handleCameraKitTouch(MotionEvent motionEvent) {
         if (!isRecording) {
             return false;
         }

@@ -14,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -22,13 +24,13 @@ import android.widget.VideoView;
 
 import java.io.File;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, View.OnTouchListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int PERMISSIONS_REQUEST = 0;
     private static final int FILE_READ_PERMISSION_REQUEST = 1;
     private static final int LOAD_VIDEO_REQUEST = 2;
 
-    private static final int MINIMUM_HOLD_DURATION = 1000;
+    private static final int MINIMUM_HOLD_DURATION = 2000;
 
     private static final String[] PERMISSIONS = {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -49,6 +51,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
+    private View.OnTouchListener videoViewTouchListener  = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            int eventAction = motionEvent.getAction();
+            if (eventAction == MotionEvent.ACTION_DOWN) {
+                Log.e("sg", "it's a down");
+                videoHoldHandler.postDelayed(pauseVideoRunnable, MINIMUM_HOLD_DURATION);
+            } else if (eventAction == MotionEvent.ACTION_UP) {
+                Log.e("sg", "it's a up");
+                if (videoIsPaused) {
+                    float releasedXCoordinate = motionEvent.getX();
+                    float releasedYCoordinate = motionEvent.getY();
+                    String message = String.format("X: %f | Y: %f", releasedXCoordinate, releasedYCoordinate);
+                    videoView.start();
+                    videoIsPaused = false;
+                    // for now, the toast is a proxy for sending touch/video data to in the server
+                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                } else {
+                    videoHoldHandler.removeCallbacks(pauseVideoRunnable);
+                }
+            }
+            Log.e("sg", Integer.toString(eventAction));
+            return true;
+        }
+    };
+
     VideoView videoView;
     Button uploadBtn, launchCameraBtn;
 
@@ -58,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle("ConcertStitch");
+        toolbar.setTitle(R.string.app_name);
 
         requestPermissions();
 
@@ -67,9 +95,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         launchCameraBtn = (Button) findViewById(R.id.launchCameraBtn);
         launchCameraBtn.setOnClickListener(this);
         videoView = findViewById(R.id.videoView);
-        videoView.setOnTouchListener(this);
-    }
+        videoView.setOnTouchListener(videoViewTouchListener);
 
+    }
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -78,16 +106,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.launchCameraBtn:
                 launchCamera();
+                break;
         }
-    }
-
-    @Override
-    public boolean onTouch(View view, MotionEvent motionEvent) {
-        switch (view.getId()) {
-            case R.id.videoView:
-                handleVideoTouch(motionEvent);
-        }
-        return false;
     }
 
     private void startVideoUpload() {
@@ -101,26 +121,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void launchCamera() {
-//        Intent launchCameraIntent = new Intent(getApplicationContext(), CameraActivity.class);
-//        startActivity(launchCameraIntent);
+        Intent launchCameraIntent = new Intent(getApplicationContext(), CameraActivity.class);
+        startActivity(launchCameraIntent);
     }
 
     private boolean handleVideoTouch(MotionEvent motionEvent) {
         int eventAction = motionEvent.getAction();
         if (eventAction == MotionEvent.ACTION_DOWN) {
+            Log.e("sg","it's a down");
             videoHoldHandler.postDelayed(pauseVideoRunnable, MINIMUM_HOLD_DURATION);
         } else if (eventAction == MotionEvent.ACTION_UP) {
+//            Toast.makeText(getApplicationContext(), "ACTION_UP", Toast.LENGTH_SHORT).show();
+            Log.e("sg","it's a up");
             if (videoIsPaused) {
                 float releasedXCoordinate = motionEvent.getX();
                 float releasedYCoordinate = motionEvent.getY();
                 String message = String.format("X: %f | Y: %f", releasedXCoordinate, releasedYCoordinate);
                 videoView.start();
                 videoIsPaused = false;
+                // for now, the toast is a proxy for sending touch/video data to in the server
                 Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
             } else {
                 videoHoldHandler.removeCallbacks(pauseVideoRunnable);
             }
         }
+        Log.e("sg", Integer.toString(eventAction));
         return true;
     }
 
