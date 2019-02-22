@@ -18,7 +18,10 @@ import androidx.core.app.ActivityCompat;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -56,10 +59,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public boolean onTouch(View view, MotionEvent motionEvent) {
             int eventAction = motionEvent.getAction();
             if (eventAction == MotionEvent.ACTION_DOWN) {
-                Log.e("sg", "it's a down");
                 videoHoldHandler.postDelayed(pauseVideoRunnable, MINIMUM_HOLD_DURATION);
             } else if (eventAction == MotionEvent.ACTION_UP) {
-                Log.e("sg", "it's a up");
                 if (videoIsPaused) {
                     float releasedXCoordinate = motionEvent.getX();
                     float releasedYCoordinate = motionEvent.getY();
@@ -72,13 +73,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     videoHoldHandler.removeCallbacks(pauseVideoRunnable);
                 }
             }
-            Log.e("sg", Integer.toString(eventAction));
             return true;
         }
     };
 
     VideoView videoView;
     Button uploadBtn, launchCameraBtn;
+    Spinner instrumentSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +98,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         videoView = findViewById(R.id.videoView);
         videoView.setOnTouchListener(videoViewTouchListener);
 
+
+        instrumentSpinner = findViewById(R.id.instrumentSpinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.instruments_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        instrumentSpinner.setAdapter(adapter);
+        instrumentSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
     }
     @Override
     public void onClick(View view) {
@@ -112,7 +131,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void startVideoUpload() {
         Intent videoPickerIntent = new Intent(Intent.ACTION_PICK);
-        File videoDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+//        File videoDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+        File videoDirectory = Environment.getExternalStorageDirectory();
         String videoDirectoryPath = videoDirectory.getPath();
         Uri data = Uri.parse(videoDirectoryPath);
 
@@ -125,29 +145,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         startActivity(launchCameraIntent);
     }
 
-    private boolean handleVideoTouch(MotionEvent motionEvent) {
-        int eventAction = motionEvent.getAction();
-        if (eventAction == MotionEvent.ACTION_DOWN) {
-            Log.e("sg","it's a down");
-            videoHoldHandler.postDelayed(pauseVideoRunnable, MINIMUM_HOLD_DURATION);
-        } else if (eventAction == MotionEvent.ACTION_UP) {
-//            Toast.makeText(getApplicationContext(), "ACTION_UP", Toast.LENGTH_SHORT).show();
-            Log.e("sg","it's a up");
-            if (videoIsPaused) {
-                float releasedXCoordinate = motionEvent.getX();
-                float releasedYCoordinate = motionEvent.getY();
-                String message = String.format("X: %f | Y: %f", releasedXCoordinate, releasedYCoordinate);
-                videoView.start();
-                videoIsPaused = false;
-                // for now, the toast is a proxy for sending touch/video data to in the server
-                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
-            } else {
-                videoHoldHandler.removeCallbacks(pauseVideoRunnable);
-            }
-        }
-        Log.e("sg", Integer.toString(eventAction));
-        return true;
-    }
 
     private void requestPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -194,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Uri videoUri = data.getData();
                     videoView.setVideoURI(videoUri);
                     videoView.setVisibility(View.VISIBLE);
+                    instrumentSpinner.setVisibility(View.VISIBLE);
                     uploadBtn.setVisibility(View.GONE);
                     launchCameraBtn.setVisibility(View.GONE);
                     videoView.start();
@@ -209,6 +207,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     launchCameraBtn.setVisibility(View.GONE);
                     videoView.start();
                 }
+                break;
         }
     }
 }

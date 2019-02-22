@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Concert Stitch</string>
-    <string name="title_activity_main">MainActivity</string>
-    <string name="title_activity_record_video">RecordVideo</string>
+    <string name="app_name">ConcertStitch</string>
+    <string name="title_activity_main">ConcertStitch</string>
+    <string name="title_activity_camera">Record</string>
 </resources>

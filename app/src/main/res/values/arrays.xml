@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="instruments_array">
+        <item>Singer</item>
+        <item>Guitar</item>
+        <item>Bass</item>
+        <item>Keyboard</item>
+        <item>Drums</item>
+    </string-array>
+</resources>
