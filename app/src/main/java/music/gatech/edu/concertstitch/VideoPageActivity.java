@@ -14,15 +14,18 @@ import android.widget.VideoView;
 
 import java.util.Map;
 
+import static music.gatech.edu.concertstitch.FullScreenActivityOld.EXIT_FULL_SCREEN_REQUEST_CODE;
 import static music.gatech.edu.concertstitch.ResourceConstants.AUDIO_URI;
 import static music.gatech.edu.concertstitch.ResourceConstants.BASE_VIDEO_URI;
+import static music.gatech.edu.concertstitch.ResourceConstants.VIDEO_NAMES;
 
 public class VideoPageActivity extends AppCompatActivity {
-    final static int FULL_SCREEN_REQUEST_CODE = 1;
+
     private final static String TAG = "VideoPageActivity";
 
     private VideoView mainVideoView;
     private String currentVideoSrc;
+    private String currentVideoName;
 
     private int currentTime = 0;
 
@@ -33,6 +36,7 @@ public class VideoPageActivity extends AppCompatActivity {
 
         mainVideoView = findViewById(R.id.main_video_view);
         currentVideoSrc = BASE_VIDEO_URI;
+        currentVideoName = VIDEO_NAMES[0]; // this is the house video
 
         Uri video = Uri.parse(currentVideoSrc);
 
@@ -47,12 +51,13 @@ public class VideoPageActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (readMediaInfoTask.getStatus() == AsyncTask.Status.FINISHED) {
 
-                    Intent fullVideoIntent = new Intent(getApplicationContext(), FullScreenActivity.class);
+                    Intent fullVideoIntent = new Intent(getApplicationContext(), VideoFullScreenActivity.class);
                     fullVideoIntent.putExtra("currentVideoSrc", currentVideoSrc);
+                    fullVideoIntent.putExtra("currentVideoName", currentVideoName);
                     fullVideoIntent.putExtra("audioSrc", AUDIO_URI);
                     fullVideoIntent.putExtra("currentTime", currentTime);
 
-                    startActivityForResult(fullVideoIntent, FULL_SCREEN_REQUEST_CODE);
+                    startActivityForResult(fullVideoIntent, EXIT_FULL_SCREEN_REQUEST_CODE);
                 }
             }
         });
@@ -60,14 +65,12 @@ public class VideoPageActivity extends AppCompatActivity {
 
     }
 
-    // callback from when activity from startActivityResult is finished
+    // callback from when activity from startActivityResult is finished (from FullScreenActivityOld)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK && requestCode == FULL_SCREEN_REQUEST_CODE) {
-            if (data.hasExtra("currentVideoSrc")) {
-                if (mainVideoView != null) {
-                    mainVideoView.start();
-                }
+        if (resultCode == RESULT_OK && requestCode == EXIT_FULL_SCREEN_REQUEST_CODE) {
+            if (data.hasExtra("currentPlayPos")) {
+                Log.e(TAG, "received currentPlayPos: " + data.getExtras().getInt("currentPlayPos"));
 
             }
         }
@@ -85,18 +88,15 @@ public class VideoPageActivity extends AppCompatActivity {
         protected Map<?, ?> doInBackground(Void... voids) {
             startTime = System.currentTimeMillis();
             Log.e(TAG, "Parse async task executing...");
-//            syncMap = ParseMedia.getSyncTimes();
-//            annotationsMap = ParseMedia.getAnnotations();
 
             ParseMedia.getSyncTimes();
             return ParseMedia.getAnnotations();
-
-            //return annotationsMap;
         }
 
         @Override
         protected void onPreExecute() {
             //super.onPreExecute();
+
             this.dialog.setMessage("Loading annotations.");
             this.dialog.show();
         }
