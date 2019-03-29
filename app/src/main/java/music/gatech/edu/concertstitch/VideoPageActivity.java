@@ -113,7 +113,7 @@ public class VideoPageActivity extends AppCompatActivity {
                 dialog.dismiss();
             }
 
-            Toast.makeText(VideoPageActivity.this, "Finished parsing in " + timeTaken / 1000 + " sec", Toast.LENGTH_SHORT).show();
+            Toast.makeText(VideoPageActivity.this, "Finished parsing in " + timeTaken / 1000 + " sec. GT network is slow af.", Toast.LENGTH_SHORT).show();
 
 
         }

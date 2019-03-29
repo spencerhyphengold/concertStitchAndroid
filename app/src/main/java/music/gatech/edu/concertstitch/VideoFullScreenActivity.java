@@ -97,6 +97,11 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
             videoPlayer.setLooping(false);
             videoPlayer.setOnPreparedListener(this);
 
+            audioPlayer.setDataSource(AUDIO_URI);
+            audioPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            audioPlayer.setLooping(false);
+            audioPlayer.setOnPreparedListener(this);
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -302,23 +307,24 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         videoPlayer.setDisplay(surfaceHolder);
         videoPlayer.prepareAsync();
+        audioPlayer.prepareAsync();
 
-        try {
-            audioPlayer.setDataSource(AUDIO_URI);
-            audioPlayer.prepareAsync();
-            audioPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            audioPlayer.setLooping(false);
-            audioPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mediaPlayer) {
-                    audioReady = true;
-                    audioPlayer.start();
-                }
-            });
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            audioPlayer.setDataSource(AUDIO_URI);
+//            audioPlayer.prepareAsync();
+//            audioPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//            audioPlayer.setLooping(false);
+//            audioPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+//                @Override
+//                public void onPrepared(MediaPlayer mediaPlayer) {
+//                    audioReady = true;
+//                    //audioPlayer.start();
+//                }
+//            });
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -339,6 +345,8 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         controller.setAnchorView((FrameLayout) findViewById(R.id.video_surface_container_frame));
         videoReady = true;
         videoPlayer.start();
+        audioPlayer.start();
+
     }
 
     @Override
