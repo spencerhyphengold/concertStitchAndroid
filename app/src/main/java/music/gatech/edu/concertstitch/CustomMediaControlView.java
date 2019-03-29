@@ -341,7 +341,7 @@ public class CustomMediaControlView extends FrameLayout {
     }
 
     public boolean isShowing() {
-        return mShowing;
+        return this.mShowing;
     }
 
     public void hide() {

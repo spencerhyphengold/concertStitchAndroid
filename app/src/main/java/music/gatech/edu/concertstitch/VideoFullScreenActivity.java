@@ -3,7 +3,11 @@ package music.gatech.edu.concertstitch;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.pm.ActivityInfo;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -11,23 +15,33 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.MediaController;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
 
 import java.io.IOException;
 
+import static music.gatech.edu.concertstitch.ParseMedia.annotationsMap;
+import static music.gatech.edu.concertstitch.ParseMedia.syncMap;
 import static music.gatech.edu.concertstitch.ResourceConstants.AUDIO_URI;
 import static music.gatech.edu.concertstitch.ResourceConstants.BASE_VIDEO_URI;
+import static music.gatech.edu.concertstitch.ResourceConstants.FPS;
+import static music.gatech.edu.concertstitch.ResourceConstants.INSTRUMENT_LABELS;
 
 public class VideoFullScreenActivity extends AppCompatActivity implements SurfaceHolder.Callback, MediaPlayer.OnPreparedListener, CustomMediaControlView.MediaPlayerControl {
 
     public final static int EXIT_FULL_SCREEN_REQUEST_CODE = 1;
 
     public static boolean fullScreenActive = false;
+
+    final int SCREEN_WIDTH = Resources.getSystem().getDisplayMetrics().widthPixels;
+    final int SCREEN_HEIGHT = Resources.getSystem().getDisplayMetrics().heightPixels;
+
 
     private String currentVideoName;
     private String currentVideoSrc;
@@ -97,23 +111,146 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
     // label display test
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.e("TOUCH-playing", isPlaying() + "");
-        Log.e("TOUCH-audioPos", getCurrentPosition() + "");
-        TextView tv = new TextView(this);
-        tv.setText("Bass");
-        tv.setTextColor(Color.WHITE);
 
-        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT);
-        layoutParams.topMargin = 650; // margin in pixels, not dps
-        layoutParams.leftMargin = 650; // margin in pixels, not dps
-        tv.setLayoutParams(layoutParams);
-        shapeFrame.addView(tv);
+        Log.e("x", event.getX() + "");
+        Log.e("y", event.getY() + "");
+
+        int currPos = getCurrentPosition();
+        int currVidFrame = currPos / 1000 * FPS;
+        Log.e("TOUCH-playing", isPlaying() + "");
+        Log.e("TOUCH-audioPos", (currPos) + "");
+        Log.e("TOUCH-Frame", currentVideoName + " " + (currFrame) + "");
+
+        Log.e("width",  SCREEN_WIDTH + "");
+        Log.e("height", SCREEN_HEIGHT + "");
+
+        Log.e("touch showing?", ""+ controller.isShowing());
+
+        if (controller.isShowing()) {
+            shapeFrame.removeAllViews();
+        }
+
+
+        //addOneTextView();
+
+        drawInstrumentLabels(currVidFrame);
         setUpFadeAnimation(shapeFrame);
 
         controller.show();
         return false;
+    }
+
+    private void addOneTextView() {
+        TextView tv = new TextView(this);
+        tv.setText("Bass");
+        tv.setTextColor(Color.WHITE);
+        //tv.setX(0);
+        //tv.setY(-10);
+        tv.setPadding(0,0,0,0);
+
+
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.WRAP_CONTENT,
+                RelativeLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.leftMargin = 250; // margin in pixels, not dps
+        layoutParams.topMargin = 350; // margin in pixels, not dps
+        tv.setLayoutParams(layoutParams);
+
+        shapeFrame.addView(tv);
+    }
+
+    private void drawInstrumentLabels(int currVidFrame) {
+        double[][] boxInfo = annotationsMap.get(currentVideoName).get(currVidFrame);
+        for (int i = 0; i < boxInfo.length; i++) {
+            double[] instrument = boxInfo[i];
+
+            double x = instrument[0];
+            double y = instrument[1];
+            double boxWidth = instrument[2];
+            double boxHeight = instrument[3];
+
+            // if no instrument is labeled at this frame, x, y, boxWidth, boxHeight will all be -1.0
+            if (x > 0) {
+                final TextView instrumentLabelTextView = new TextView(this);
+                instrumentLabelTextView.setText(INSTRUMENT_LABELS[i]);
+                instrumentLabelTextView.setTextColor(Color.WHITE);
+
+                FrameLayout.LayoutParams instrumentLabelLayoutParams = new FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT);
+
+
+                instrumentLabelLayoutParams.leftMargin = (int) (x * SCREEN_WIDTH - 50);
+                instrumentLabelLayoutParams.topMargin = (int) (y * SCREEN_HEIGHT + 50);
+
+
+
+                Log.e("text-views-currinstr", INSTRUMENT_LABELS[i]);
+                Log.e("real-x", + x + "");
+                Log.e("real-y", + y + "");
+                Log.e("real-boxw", + boxWidth + "");
+                Log.e("real-boxh", + boxHeight + "");
+                Log.e("textview-x", "" + (x * SCREEN_WIDTH));
+                Log.e("textview-y", "" + (y * SCREEN_HEIGHT));
+                Log.e("textview-w", "" + (boxWidth * SCREEN_WIDTH));
+                Log.e("textview-h", "" + (boxHeight * SCREEN_HEIGHT));
+
+                instrumentLabelTextView.setLayoutParams(instrumentLabelLayoutParams);
+
+
+                LayerDrawable bottomBorder = getBorders(
+                        Color.LTGRAY, // Background color
+                        Color.RED, // Border color
+                        2, // Left border in pixels
+                        2, // Top border in pixels
+                        2, // Right border in pixels
+                        2 // Bottom border in pixels
+                );
+
+                instrumentLabelTextView.setBackground(bottomBorder);
+
+                instrumentLabelTextView.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        Log.e("clicked: ", instrumentLabelTextView.getText() + "");
+                    }
+                });
+
+                shapeFrame.addView(instrumentLabelTextView);
+
+            }
+        }
+    }
+
+
+    // Custom method to generate one or multi side border for a view
+    protected LayerDrawable getBorders(int bgColor, int borderColor,
+                                       int left, int top, int right, int bottom){
+        // Initialize new color drawables
+        ColorDrawable borderColorDrawable = new ColorDrawable(borderColor);
+        ColorDrawable backgroundColorDrawable = new ColorDrawable(bgColor);
+
+        // Initialize a new array of drawable objects
+        Drawable[] drawables = new Drawable[]{
+                borderColorDrawable,
+                backgroundColorDrawable
+        };
+
+        // Initialize a new layer drawable instance from drawables array
+        LayerDrawable layerDrawable = new LayerDrawable(drawables);
+
+        // Set padding for background color layer
+        layerDrawable.setLayerInset(
+                1, // Index of the drawable to adjust [background color layer]
+                left, // Number of pixels to add to the left bound [left border]
+                top, // Number of pixels to add to the top bound [top border]
+                right, // Number of pixels to add to the right bound [right border]
+                bottom // Number of pixels to add to the bottom bound [bottom border]
+        );
+
+        // Finally, return the one or more sided bordered background drawable
+        return layerDrawable;
     }
 
     private void setUpFadeAnimation(final FrameLayout textView) {

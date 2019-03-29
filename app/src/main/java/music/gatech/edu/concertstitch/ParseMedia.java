@@ -159,7 +159,7 @@ public class ParseMedia {
                                 }
 
                                 annotationForCurrVid.put(frame + makeupTime, tempArr);
-                                annotationForCurrVid.get(frame + makeupTime)[instrumentIndex][0] = xtl / 1280;
+                                annotationForCurrVid.get(frame + makeupTime)[instrumentIndex][0] = xtl  / 1280;
                                 annotationForCurrVid.get(frame + makeupTime)[instrumentIndex][1] = ytl / 720;
                                 annotationForCurrVid.get(frame + makeupTime)[instrumentIndex][2] = width;
                                 annotationForCurrVid.get(frame + makeupTime)[instrumentIndex][3] = height;
