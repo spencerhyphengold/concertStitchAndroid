@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,7 +26,7 @@ import android.widget.VideoView;
 
 import java.io.File;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class UploadActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int PERMISSIONS_REQUEST = 0;
     private static final int FILE_READ_PERMISSION_REQUEST = 1;
@@ -68,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     videoView.start();
                     videoIsPaused = false;
                     // for now, the toast is a proxy for sending touch/video data to in the server
-                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(UploadActivity.this, message, Toast.LENGTH_SHORT).show();
                 } else {
                     videoHoldHandler.removeCallbacks(pauseVideoRunnable);
                 }
@@ -77,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
+    Toolbar toolbar;
     VideoView videoView;
     Button uploadBtn, launchCameraBtn;
     Spinner instrumentSpinner;
@@ -84,16 +84,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setContentView(R.layout.activity_upload);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(R.string.app_name);
 
         requestPermissions();
 
-        uploadBtn = (Button) findViewById(R.id.uploadBtn);
+        uploadBtn = findViewById(R.id.uploadBtn);
         uploadBtn.setOnClickListener(this);
-        launchCameraBtn = (Button) findViewById(R.id.launchCameraBtn);
+        launchCameraBtn = findViewById(R.id.launchCameraBtn);
         launchCameraBtn.setOnClickListener(this);
         videoView = findViewById(R.id.videoView);
         videoView.setOnTouchListener(videoViewTouchListener);
