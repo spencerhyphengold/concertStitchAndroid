@@ -324,6 +324,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         controller.setMediaPlayer(this);
         controller.setAnchorView((FrameLayout) findViewById(R.id.video_surface_container_frame));
         videoReady = true;
+        audioReady = true;
         videoPlayer.start();
         audioPlayer.start();
 
@@ -346,7 +347,6 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
     @Override
     public int getDuration() {
         return audioPlayer.getDuration();
-        //return videoPlayer.getDuration();
     }
 
     @Override
