@@ -3,11 +3,11 @@ package music.gatech.edu.concertstitch;
 import java.io.Serializable;
 
 public class TrackingFrame implements Serializable {
-    long time;
+    long startTime, endTime;
     float minX, minY, maxX, maxY;
 
-    TrackingFrame(long time, float x, float y) {
-        this.time = time;
+    TrackingFrame(long startTime, float x, float y) {
+        this.startTime = startTime;
         this.minX = x;
         this.maxX = x;
         this.minY = y;
@@ -27,7 +27,8 @@ public class TrackingFrame implements Serializable {
         }
     }
 
+    @Override
     public String toString() {
-        return String.format("time: %d \nx: %f \ny: %f", time, minX, maxY);
+        return String.format("time: %d \nx: %f \ny: %f", startTime, minX, maxY);
     }
 }

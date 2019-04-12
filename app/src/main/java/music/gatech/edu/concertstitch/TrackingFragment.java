@@ -42,76 +42,6 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
 
     private boolean isActive;
 
-//    public class TrackingFrame implements Serializable {
-//        long time;
-//        float minX, minY, maxX, maxY;
-//
-//        TrackingFrame(long time, float x, float y) {
-//            this.time = time;
-//            this.minX = x;
-//            this.maxX = x;
-//            this.minY = y;
-//            this.maxY = y;
-//        }
-//
-//        private TrackingFrame(Parcel parcel) {
-//            this.time = parcel.readLong();
-//            this.minX = parcel.readFloat();
-//            this.maxX = parcel.readFloat();
-//            this.minY = parcel.readFloat();
-//            this.maxY = parcel.readFloat();
-//        }
-//
-//        public void addPoint(float newX, float newY) {
-//            if (newX < minX) {
-//                minX = newX;
-//            } else if (newX > maxX) {
-//                maxX = newX;
-//            }
-//            if (newY < minY) {
-//                minY = newY;
-//            } else if (newY > maxY) {
-//                maxY = newY;
-//            }
-//        }
-//
-//        public String toString() {
-//            return String.format("time: %d \nx: %f \ny: %f", time, minX, maxY);
-//        }
-//
-////        @Override
-////        public int describeContents() {
-////            return 0;
-////        }
-////
-////        @Override
-////        public void writeToParcel(Parcel parcel, int i) {
-////            parcel.writeLong(time);
-////            parcel.writeFloat(minX);
-////            parcel.writeFloat(maxX);
-////            parcel.writeFloat(minY);
-////            parcel.writeFloat(maxY);
-////        }
-////        public final Parcelable.Creator<TrackingFrame> CREATOR
-////                = new Parcelable.Creator<TrackingFrame>() {
-////
-////            // This simply calls our new constructor (typically private) and
-////            // passes along the unmarshalled `Parcel`, and then returns the new object!
-////            @Override
-////            public TrackingFrame createFromParcel(Parcel in) {
-////                return new TrackingFrame(in);
-////            }
-////
-////            // We just need to copy this and change the type to match our class.
-////            @Override
-////            public TrackingFrame[] newArray(int size) {
-////                return new TrackingFrame[size];
-////            }
-////        };
-//    }
-
-
-
     public static class TrackingCanvas extends GestureOverlayView {
         Paint paint;
         Path path;
@@ -138,20 +68,6 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        trackingFrames = new ArrayList<>();
-        paint = new Paint();
-        path = new Path();
-        paint.setAntiAlias(true);
-        paint.setColor(Color.WHITE);
-        paint.setStrokeJoin(Paint.Join.ROUND);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(10f);
-    }
-
-    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_tracking, container, false);
@@ -159,17 +75,21 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        trackingFrames = new ArrayList<>();
+        currTrackingFrame = null;
+
+        path = new Path();
+        paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setColor(Color.WHITE);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(10f);
+
         trackingCanvas = getView().findViewById(R.id.trackingCanvas);
         trackingCanvas.initialize(paint, path);
         trackingCanvas.setOnTouchListener(this);
     }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-//        mListener = null;
-    }
-
 
     void onStartTracking() {
         isActive = true;
@@ -178,6 +98,9 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
 
     ArrayList<TrackingFrame> onFinishTracking() {
         Toast.makeText(getContext(), "done recording", Toast.LENGTH_SHORT).show();
+        if (currTrackingFrame != null) {
+            currTrackingFrame.endTime = System.currentTimeMillis() - startRecordingTime;
+        }
         isActive = false;
         return trackingFrames;
     }
@@ -194,6 +117,9 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 path.moveTo(xPos, yPos);
+                if (currTrackingFrame != null) {
+                    currTrackingFrame.endTime = time;
+                }
                 currTrackingFrame = new TrackingFrame(time, xPos, yPos);
 
             case MotionEvent.ACTION_MOVE:
