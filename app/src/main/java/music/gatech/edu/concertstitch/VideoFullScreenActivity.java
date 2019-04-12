@@ -37,11 +37,8 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
     public final static int EXIT_FULL_SCREEN_REQUEST_CODE = 1;
 
-    public static boolean fullScreenActive = false;
-
-    final int SCREEN_WIDTH = Resources.getSystem().getDisplayMetrics().widthPixels;
-    final int SCREEN_HEIGHT = Resources.getSystem().getDisplayMetrics().heightPixels;
-
+    public final static int SCREEN_WIDTH = Resources.getSystem().getDisplayMetrics().widthPixels;
+    public final static int SCREEN_HEIGHT = Resources.getSystem().getDisplayMetrics().heightPixels;
 
     private String currentVideoName;
     private String currentVideoSrc;
@@ -102,14 +99,12 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
             audioPlayer.setLooping(false);
             audioPlayer.setOnPreparedListener(this);
 
-
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         shapeFrame = findViewById(R.id.shape_fl);
         //shapeFrame.setVisibility(View.GONE);
-
 
     }
 
@@ -126,7 +121,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         Log.e("TOUCH-audioPos", (currPos) + "");
         Log.e("TOUCH-Frame", currentVideoName + " " + (currFrame) + "");
 
-        Log.e("width",  SCREEN_WIDTH + "");
+        Log.e("width", SCREEN_WIDTH + "");
         Log.e("height", SCREEN_HEIGHT + "");
 
 
@@ -149,7 +144,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         tv.setTextColor(Color.WHITE);
         //tv.setX(0);
         //tv.setY(-10);
-        tv.setPadding(0,0,0,0);
+        tv.setPadding(0, 0, 0, 0);
 
 
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
@@ -182,23 +177,20 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
                         FrameLayout.LayoutParams.WRAP_CONTENT,
                         FrameLayout.LayoutParams.WRAP_CONTENT);
 
-
                 instrumentLabelLayoutParams.leftMargin = (int) (x * SCREEN_WIDTH - 50);
                 instrumentLabelLayoutParams.topMargin = (int) (y * SCREEN_HEIGHT + 50);
 
-
                 Log.e("text-views-currinstr", INSTRUMENT_LABELS[i]);
-                Log.e("real-x", + x + "");
-                Log.e("real-y", + y + "");
-                Log.e("real-boxw", + boxWidth + "");
-                Log.e("real-boxh", + boxHeight + "");
+                Log.e("real-x", +x + "");
+                Log.e("real-y", +y + "");
+                Log.e("real-boxw", +boxWidth + "");
+                Log.e("real-boxh", +boxHeight + "");
                 Log.e("textview-x", "" + (x * SCREEN_WIDTH));
                 Log.e("textview-y", "" + (y * SCREEN_HEIGHT));
                 Log.e("textview-w", "" + (boxWidth * SCREEN_WIDTH));
                 Log.e("textview-h", "" + (boxHeight * SCREEN_HEIGHT));
 
                 instrumentLabelTextView.setLayoutParams(instrumentLabelLayoutParams);
-
 
                 LayerDrawable bottomBorder = getBorders(
                         Color.LTGRAY, // Background color
@@ -225,10 +217,9 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         }
     }
 
-
     // Custom method to generate one or multi side border for a view
     protected LayerDrawable getBorders(int bgColor, int borderColor,
-                                       int left, int top, int right, int bottom){
+                                       int left, int top, int right, int bottom) {
         // Initialize new color drawables
         ColorDrawable borderColorDrawable = new ColorDrawable(borderColor);
         ColorDrawable backgroundColorDrawable = new ColorDrawable(bgColor);
@@ -265,7 +256,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         fadeOut.setDuration(500);
         fadeOut.setStartOffset(3000);
 
-        fadeIn.setAnimationListener(new Animation.AnimationListener(){
+        fadeIn.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationEnd(Animation arg0) {
                 textView.startAnimation(fadeOut);
@@ -280,7 +271,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
             }
         });
 
-        fadeOut.setAnimationListener(new Animation.AnimationListener(){
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationEnd(Animation arg0) {
                 if (isPlaying())

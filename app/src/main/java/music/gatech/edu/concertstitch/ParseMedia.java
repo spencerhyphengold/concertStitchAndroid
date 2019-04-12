@@ -39,15 +39,12 @@ public class ParseMedia {
 
     public static final int ANNOATIONS_LENGTH = 6517;
 
-    public static  Map<String, String> mediaUrlMap = new HashMap<>();
+    public static Map<String, String> mediaUrlMap = new HashMap<>();
     public static Map<String, double[]> syncMap = new HashMap<>();
     public static Map<String, HashMap<Integer, double[][]>> annotationsMap = new HashMap<>();
 
 
-
     public static Map<String, double[]> getSyncTimes() {
-
-        // Map<String, double[]> syncMap = new HashMap<>();
 
         URL url = null;
         try {
@@ -107,8 +104,6 @@ public class ParseMedia {
 
     public static Map<String, HashMap<Integer, double[][]>> getAnnotations() {
 
-        // Map<String, HashMap<Integer, double[][]>> annotationsMap = new HashMap<>();
-
         if (syncMap != null) {
             for (String v : VIDEO_NAMES) {
                 HashMap<Integer, double[][]> annotationForCurrVid = new HashMap<>();
@@ -159,7 +154,7 @@ public class ParseMedia {
                                 }
 
                                 annotationForCurrVid.put(frame + makeupTime, tempArr);
-                                annotationForCurrVid.get(frame + makeupTime)[instrumentIndex][0] = xtl  / 1280;
+                                annotationForCurrVid.get(frame + makeupTime)[instrumentIndex][0] = xtl / 1280;
                                 annotationForCurrVid.get(frame + makeupTime)[instrumentIndex][1] = ytl / 720;
                                 annotationForCurrVid.get(frame + makeupTime)[instrumentIndex][2] = width;
                                 annotationForCurrVid.get(frame + makeupTime)[instrumentIndex][3] = height;
