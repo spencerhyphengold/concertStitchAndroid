@@ -48,17 +48,21 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
 
         public TrackingCanvas(android.content.Context context, android.util.AttributeSet attributes) {
             super(context, attributes);
-            setBackgroundColor(0x000000);
         }
 
-        public void initialize(Paint paint, Path path) {
-            this.paint = paint;
+        public void initialize(Path path) {
             this.path = path;
+            this.paint = new Paint();
+            paint.setAntiAlias(true);
+            paint.setColor(Color.WHITE);
+            paint.setStrokeJoin(Paint.Join.ROUND);
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(10f);
         }
 
         @Override
-        public void draw(Canvas canvas) {
-            super.draw(canvas);
+        public void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
             canvas.drawPath(path, paint);
         }
     }
@@ -79,15 +83,9 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
         currTrackingFrame = null;
 
         path = new Path();
-        paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setColor(Color.WHITE);
-        paint.setStrokeJoin(Paint.Join.ROUND);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(10f);
 
         trackingCanvas = getView().findViewById(R.id.trackingCanvas);
-        trackingCanvas.initialize(paint, path);
+        trackingCanvas.initialize(path);
         trackingCanvas.setOnTouchListener(this);
     }
 
@@ -121,6 +119,7 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
                     currTrackingFrame.endTime = time;
                 }
                 currTrackingFrame = new TrackingFrame(time, xPos, yPos);
+                trackingFrames.add(currTrackingFrame);
 
             case MotionEvent.ACTION_MOVE:
                 path.lineTo(xPos, yPos);
@@ -133,7 +132,6 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
                 break;
 
             case MotionEvent.ACTION_UP:
-                trackingFrames.add(currTrackingFrame);
                 path = new Path();
                 trackingCanvas.path = path;
 

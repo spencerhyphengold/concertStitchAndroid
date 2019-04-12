@@ -45,6 +45,7 @@ public class ClassifyActivity extends AppCompatActivity {
         if (trackingFrames.size() == 0) {
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(intent);
+            return;
         }
         currIndex = 0;
         currTime = trackingFrames.get(0).startTime;
