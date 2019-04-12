@@ -129,12 +129,10 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         Log.e("width",  SCREEN_WIDTH + "");
         Log.e("height", SCREEN_HEIGHT + "");
 
-        Log.e("touch showing?", ""+ controller.isShowing());
 
         if (controller.isShowing()) {
             shapeFrame.removeAllViews();
         }
-
 
         //addOneTextView();
 
@@ -189,7 +187,6 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
                 instrumentLabelLayoutParams.topMargin = (int) (y * SCREEN_HEIGHT + 50);
 
 
-
                 Log.e("text-views-currinstr", INSTRUMENT_LABELS[i]);
                 Log.e("real-x", + x + "");
                 Log.e("real-y", + y + "");
@@ -205,11 +202,11 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
                 LayerDrawable bottomBorder = getBorders(
                         Color.LTGRAY, // Background color
-                        Color.RED, // Border color
-                        2, // Left border in pixels
-                        2, // Top border in pixels
-                        2, // Right border in pixels
-                        2 // Bottom border in pixels
+                        Color.WHITE, // Border color
+                        5, // Left border in pixels
+                        5, // Top border in pixels
+                        5, // Right border in pixels
+                        5 // Bottom border in pixels
                 );
 
                 instrumentLabelTextView.setBackground(bottomBorder);
@@ -309,23 +306,6 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         videoPlayer.prepareAsync();
         audioPlayer.prepareAsync();
 
-//        try {
-//            audioPlayer.setDataSource(AUDIO_URI);
-//            audioPlayer.prepareAsync();
-//            audioPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-//            audioPlayer.setLooping(false);
-//            audioPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-//                @Override
-//                public void onPrepared(MediaPlayer mediaPlayer) {
-//                    audioReady = true;
-//                    //audioPlayer.start();
-//                }
-//            });
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
     }
 
     @Override
@@ -357,8 +337,10 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
     @Override
     public void pause() {
-        audioPlayer.pause();
-        videoPlayer.pause();
+        if (isPlaying()) {
+            audioPlayer.pause();
+            videoPlayer.pause();
+        }
     }
 
     @Override
@@ -380,7 +362,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
     @Override
     public boolean isPlaying() {
-        return videoPlayer.isPlaying();
+        return videoPlayer.isPlaying() || audioPlayer.isPlaying();
     }
 
     @Override
