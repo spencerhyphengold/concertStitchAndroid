@@ -2,9 +2,8 @@ package music.gatech.edu.concertstitch;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,10 +19,10 @@ import java.util.ArrayList;
 public class ClassifyActivity extends AppCompatActivity {
 
     private MediaMetadataRetriever media = new MediaMetadataRetriever();
+    private TrackingFrame currTrackingFrame;
     private ArrayList<TrackingFrame> trackingFrames;
     private String videoPath;
-    private BitmapDrawable currImage;
-    private long currTime;
+    private Bitmap currImage;
     private int currIndex;
 
     private ImageView framePreview;
@@ -48,22 +47,21 @@ public class ClassifyActivity extends AppCompatActivity {
             return;
         }
         currIndex = 0;
-        currTime = trackingFrames.get(0).startTime;
-        // TODO: fix permissions errors thrown by MediaMetadataRetriever
+        currTrackingFrame = trackingFrames.get(0);
         media.setDataSource(videoPath);
-        currImage = new BitmapDrawable(getResources(), media.getFrameAtTime(currTime));
-        framePreview.setBackground(currImage);
+        currImage = media.getFrameAtTime(currTrackingFrame.startTime, MediaMetadataRetriever.OPTION_CLOSEST);
+        framePreview.setImageBitmap(currImage);
 
         nextFrameBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 currIndex++;
-                if (currIndex < trackingFrames.size() - 1) {
-                    currTime = trackingFrames.get(currIndex).startTime;
-                    currImage = new BitmapDrawable(getResources(), media.getFrameAtTime(currTime));
-                    framePreview.setBackground(currImage);
-                } else if (currIndex == trackingFrames.size() - 1) {
+                if (currIndex == trackingFrames.size() - 1) {
                     nextFrameBtn.setText("Submit");
+                } else if (currIndex < trackingFrames.size() - 1) {
+                    currTrackingFrame = trackingFrames.get(currIndex);
+                    currImage = media.getFrameAtTime(currTrackingFrame.startTime, MediaMetadataRetriever.OPTION_CLOSEST);
+                    framePreview.setImageBitmap(currImage);
                 } else {
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
@@ -79,7 +77,7 @@ public class ClassifyActivity extends AppCompatActivity {
         instrumentSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
+                currTrackingFrame.player = adapterView.getItemAtPosition(i).toString();
             }
 
             @Override

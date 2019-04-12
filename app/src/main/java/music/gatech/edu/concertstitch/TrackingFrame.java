@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class TrackingFrame implements Serializable {
     long startTime, endTime;
     float minX, minY, maxX, maxY;
+    String player;
 
     TrackingFrame(long startTime, float x, float y) {
         this.startTime = startTime;
