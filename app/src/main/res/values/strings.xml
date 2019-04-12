@@ -12,7 +12,4 @@
     <string name="mute_btn_icon">MuteButtonIcon</string>
     <string name="exit_full_screen_btn_icon">ExitFullScreenButtonIcon</string>
     <string name="house_btn_icon">HouseButtonIcon</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
