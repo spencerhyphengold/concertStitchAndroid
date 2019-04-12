@@ -37,8 +37,14 @@ public class CameraActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
-        camera = findViewById(R.id.camera);
-        camera.setLifecycleOwner(this);
+        videoFile = getVideoFile();
+        if (videoFile == null) {
+            Toast.makeText(this, "Cannot record video without write permissions.", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            return;
+        }
+
         trackingFragment = (TrackingFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.trackingFragment);
         recordBtn = findViewById(R.id.recordBtn);
@@ -50,15 +56,13 @@ public class CameraActivity extends AppCompatActivity {
                 } else {
                     isRecording = true;
                     recordBtn.setText("Recording");
-                    String videoPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
-                            .getAbsolutePath() + "/concertStitch/testVideo.mp4";
-                    videoFile = new File(videoPath);
                     camera.takeVideo(videoFile);
                     trackingFragment.onStartTracking();
                 }
             }
         });
 
+        camera = findViewById(R.id.camera);
         setUpCamera();
     }
 
@@ -66,50 +70,42 @@ public class CameraActivity extends AppCompatActivity {
         isRecording = false;
         recordBtn.setText("Record");
         camera.stopVideo();
-
-//        Toast.makeText(getApplicationContext(), "onVideoTaken was called.", Toast.LENGTH_SHORT).show();
-        ArrayList<TrackingFrame> trackingFrames = trackingFragment.onFinishTracking();
-        // toast is a proxy for creating xml with the points, sending to server
-        Toast.makeText(CameraActivity.this, String.format("%d frames(s) ready to send to server", trackingFrames.size()), Toast.LENGTH_SHORT).show();
-
-
-        Intent intent = new Intent(this, ClassifyActivity.class);
-        Bundle args = new Bundle();
-        args.putSerializable("trackingFrames", trackingFrames);
-        args.putSerializable("videoPath", videoFile.getAbsolutePath());
-        intent.putExtra("bundle", args);
-        startActivity(intent);
-////                    Fragment classifyFragment = ClassifyPlayersFragment.newInstance(trackingFrames, result.getFile().getAbsolutePath());
-//        Fragment classifyFragment = ClassifyPlayersFragment.newInstance(trackingFrames, videoFile.getAbsolutePath());
-//        FragmentManager manager = getSupportFragmentManager();
-//        FragmentTransaction transaction = manager.beginTransaction();
-//        transaction.replace(R.id.cameraLayout,classifyFragment);
-//        transaction.addToBackStack(null);
-//        transaction.commit();
     }
 
+    private File getVideoFile() {
+        String folderPath = Environment.getExternalStorageDirectory() +
+                File.separator + "ConcertStitch";
+        File folder = new File(folderPath);
+        boolean success = true;
+        if (!folder.exists()) {
+            success = folder.mkdirs();
+        }
+
+        if (success) {
+            return new File(folderPath + File.separator + "demo.mp4");
+        } else {
+            return null;
+        }
+    }
 
     private void setUpCamera() {
+        camera.setLifecycleOwner(this);
         camera.setMode(Mode.VIDEO);
         camera.addCameraListener(new CameraListener() {
             @Override
             public void onVideoTaken(@NonNull VideoResult result) {
-                Toast.makeText(getApplicationContext(), "Done recording", Toast.LENGTH_SHORT).show();
+            ArrayList<TrackingFrame> trackingFrames = trackingFragment.onFinishTracking();
+            // toast is a proxy for creating xml with the points, sending to server
+            Toast.makeText(CameraActivity.this, String.format("%d frames(s) ready to send to server", trackingFrames.size()), Toast.LENGTH_SHORT).show();
 
-//                Toast.makeText(getApplicationContext(), "onVideoTaken was called.", Toast.LENGTH_SHORT).show();
-//                ArrayList<TrackingFragment.TrackingFrame> trackingFrames = trackingFragment.onFinishTracking();
-//                // toast is a proxy for creating xml with the points, sending to server
-//                Toast.makeText(CameraActivity.this, String.format("%d frames(s) ready to send to server", trackingFrames.size()), Toast.LENGTH_SHORT).show();
-//
-//                Fragment classifyFragment = ClassifyPlayersFragment.newInstance(trackingFrames, result.getFile().getAbsolutePath());
-//                FragmentManager manager = getSupportFragmentManager();
-//                FragmentTransaction transaction = manager.beginTransaction();
-//                transaction.replace(R.id.cameraLayout,classifyFragment);
-//                transaction.addToBackStack(null);
-//                transaction.commit();
+            Intent intent = new Intent(getApplicationContext(), ClassifyActivity.class);
+            Bundle args = new Bundle();
+            args.putSerializable("trackingFrames", trackingFrames);
+            args.putSerializable("videoPath", videoFile.getAbsolutePath());
+            Toast.makeText(getApplicationContext(), videoFile.getAbsolutePath(), Toast.LENGTH_LONG).show();
+            intent.putExtra("bundle", args);
+            startActivity(intent);
             }
         });
     }
-
-//    public void onFinishTracking(List<TrackingFragment.TrackingPoint> trackingPoints) {}
 }

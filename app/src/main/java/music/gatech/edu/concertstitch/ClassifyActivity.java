@@ -22,7 +22,7 @@ public class ClassifyActivity extends AppCompatActivity {
     private MediaMetadataRetriever media = new MediaMetadataRetriever();
     private ArrayList<TrackingFrame> trackingFrames;
     private String videoPath;
-    private BitmapDrawable currFrame;
+    private BitmapDrawable currImage;
     private long currTime;
     private int currIndex;
 
@@ -50,9 +50,9 @@ public class ClassifyActivity extends AppCompatActivity {
         currIndex = 0;
         currTime = trackingFrames.get(0).startTime;
         // TODO: fix permissions errors thrown by MediaMetadataRetriever
-        // media.setDataSource(videoPath);
-        currFrame = new BitmapDrawable(getResources(), media.getFrameAtTime(currTime));
-        framePreview.setBackground(currFrame);
+        media.setDataSource(videoPath);
+        currImage = new BitmapDrawable(getResources(), media.getFrameAtTime(currTime));
+        framePreview.setBackground(currImage);
 
         nextFrameBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,8 +60,8 @@ public class ClassifyActivity extends AppCompatActivity {
                 currIndex++;
                 if (currIndex < trackingFrames.size() - 1) {
                     currTime = trackingFrames.get(currIndex).startTime;
-                    currFrame = new BitmapDrawable(getResources(), media.getFrameAtTime(currTime));
-                    framePreview.setBackground(currFrame);
+                    currImage = new BitmapDrawable(getResources(), media.getFrameAtTime(currTime));
+                    framePreview.setBackground(currImage);
                 } else if (currIndex == trackingFrames.size() - 1) {
                     nextFrameBtn.setText("Submit");
                 } else {

@@ -81,7 +81,6 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         trackingFrames = new ArrayList<>();
         currTrackingFrame = null;
-
         path = new Path();
 
         trackingCanvas = getView().findViewById(R.id.trackingCanvas);
