@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int FILE_READ_PERMISSION_REQUEST = 1;
     private static final int LOAD_VIDEO_REQUEST = 2;
 
-    private static final int MINIMUM_HOLD_DURATION = 2000;
+    private static final int MINIMUM_HOLD_DURATION = 500;
 
     private static final String[] PERMISSIONS = {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -64,11 +64,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (videoIsPaused) {
                     float releasedXCoordinate = motionEvent.getX();
                     float releasedYCoordinate = motionEvent.getY();
-                    String message = String.format("X: %f | Y: %f", releasedXCoordinate, releasedYCoordinate);
-                    videoView.start();
-                    videoIsPaused = false;
+                    String message = "IT WORKED";
+//                    String message = String.format("X: %f | Y: %f", releasedXCoordinate, releasedYCoordinate);
+                    instrumentSpinner.performClick();
+//                    videoView.start();
+//                    videoIsPaused = false;
                     // for now, the toast is a proxy for sending touch/video data to in the server
-                    Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
                 } else {
                     videoHoldHandler.removeCallbacks(pauseVideoRunnable);
                 }
@@ -107,12 +109,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         instrumentSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
+                videoView.start();
+                videoIsPaused = false;
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
+                videoView.start();
+                videoIsPaused = false;
             }
         });
 
