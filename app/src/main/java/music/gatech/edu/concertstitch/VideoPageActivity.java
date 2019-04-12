@@ -42,14 +42,19 @@ public class VideoPageActivity extends AppCompatActivity {
 
         mainVideoView.setVideoURI(video); // this sets the screen to proper size
 
-        final ReadMediaInfoTask readMediaInfoTask = new ReadMediaInfoTask();
-        readMediaInfoTask.execute();
+        final ReadAnnotationsTask readAnnotationsTask = new ReadAnnotationsTask();
+        readAnnotationsTask.execute();
+
+        final ReadMediaSourceTask readMediaSourceTask = new ReadMediaSourceTask();
+        readMediaSourceTask.execute();
+
 
         // clicking on the VideoView should take one to full screen view
         mainVideoView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (readMediaInfoTask.getStatus() == AsyncTask.Status.FINISHED) {
+                if (readAnnotationsTask.getStatus() == AsyncTask.Status.FINISHED
+                        && readMediaSourceTask.getStatus() == AsyncTask.Status.FINISHED) {
 
                     Intent fullVideoIntent = new Intent(getApplicationContext(), VideoFullScreenActivity.class);
                     fullVideoIntent.putExtra("currentVideoSrc", currentVideoSrc);
@@ -76,10 +81,7 @@ public class VideoPageActivity extends AppCompatActivity {
         }
     }
 
-    // TODO: write a task that gets the annotation info on the background.
-    // make sure this is done before the user is able to click on the video
-
-    public class ReadMediaInfoTask extends AsyncTask<Void, Void, Map<?, ?>> {
+    public class ReadAnnotationsTask extends AsyncTask<Void, Void, Map<?, ?>> {
 
         private ProgressDialog dialog = new ProgressDialog(VideoPageActivity.this);
         private long startTime, endTime;
@@ -87,7 +89,7 @@ public class VideoPageActivity extends AppCompatActivity {
         @Override
         protected Map<?, ?> doInBackground(Void... voids) {
             startTime = System.currentTimeMillis();
-            Log.e(TAG, "Parse async task executing...");
+            Log.e(TAG, "Parse annotation async task executing...");
 
             ParseMedia.getSyncTimes();
             return ParseMedia.getAnnotations();
@@ -106,18 +108,44 @@ public class VideoPageActivity extends AppCompatActivity {
             endTime = System.currentTimeMillis();
             long timeTaken = endTime - startTime;
 
-            Log.e(TAG, "Parse async task finished...");
+            Log.e(TAG, "Parse annotation async task finished...");
             Log.e(TAG, "Time taken to parse: " + timeTaken / 1000 + " sec");
 
             if (dialog.isShowing()) {
                 dialog.dismiss();
             }
 
-            Toast.makeText(VideoPageActivity.this, "Finished parsing in " + timeTaken / 1000 + " sec. GT network is slow af.", Toast.LENGTH_SHORT).show();
-
+            Toast.makeText(VideoPageActivity.this, "Finished parsing annotations in " + timeTaken / 1000 + " sec. ", Toast.LENGTH_SHORT).show();
 
         }
 
+    }
+
+    public class ReadMediaSourceTask extends AsyncTask<Void, Void, Map<String, String>> {
+
+        private long startTime, endTime;
+
+        @Override
+        protected Map<String, String> doInBackground(Void... voids) {
+            startTime = System.currentTimeMillis();
+            Log.e(TAG, "Parse async read video source task executing...");
+
+            return ParseMedia.getMediaSrc();
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        protected void onPostExecute(Map<String, String> m) {
+            endTime = System.currentTimeMillis();
+            long timeTaken = endTime - startTime;
+            Log.e(TAG, "Parse video source async task finished...");
+            Log.e(TAG, "Finished parsing in " + timeTaken / 1000 + " sec. ");
+
+        }
 
     }
 }
