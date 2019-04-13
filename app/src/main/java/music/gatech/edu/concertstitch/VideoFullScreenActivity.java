@@ -37,8 +37,8 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
     public final static int EXIT_FULL_SCREEN_REQUEST_CODE = 1;
 
-    public final static int SCREEN_WIDTH = Resources.getSystem().getDisplayMetrics().widthPixels;
-    public final static int SCREEN_HEIGHT = Resources.getSystem().getDisplayMetrics().heightPixels;
+    public final int SCREEN_WIDTH = Resources.getSystem().getDisplayMetrics().widthPixels;
+    public final int SCREEN_HEIGHT = Resources.getSystem().getDisplayMetrics().heightPixels;
 
     private String currentVideoName;
     private String currentVideoSrc;
@@ -131,7 +131,8 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
         //addOneTextView();
 
-        drawInstrumentLabels(currVidFrame);
+        //drawInstrumentLabels(currVidFrame);
+        addLabelView(currVidFrame);
         setUpFadeAnimation(shapeFrame);
 
         controller.show();
@@ -155,6 +156,19 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         tv.setLayoutParams(layoutParams);
 
         shapeFrame.addView(tv);
+    }
+
+    private void addLabelView(int currVidFrame){
+        DrawLabelsView drawLabelsView = new DrawLabelsView(this);
+        double[][]boxInfo = annotationsMap.get(currentVideoName).get(currVidFrame);
+        drawLabelsView.setDimensions(SCREEN_WIDTH, SCREEN_HEIGHT);
+        drawLabelsView.fillLabels(boxInfo);
+        shapeFrame.addView(drawLabelsView);
+
+    }
+
+    public void showController() {
+        controller.show();
     }
 
     private void drawInstrumentLabels(int currVidFrame) {

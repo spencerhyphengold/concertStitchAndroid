@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -12,8 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static music.gatech.edu.concertstitch.ResourceConstants.INSTRUMENT_LABELS;
-import static music.gatech.edu.concertstitch.VideoFullScreenActivity.SCREEN_HEIGHT;
-import static music.gatech.edu.concertstitch.VideoFullScreenActivity.SCREEN_WIDTH;
 
 /**
  * @author mcw0805
@@ -22,6 +21,8 @@ public class DrawLabelsView extends View {
 
     List<InstrumentInfoAtFrame> instrumentInfoAtFrameList = new ArrayList<>();
     Paint paint = new Paint();
+    int screenWidth, screenHeight;
+    boolean showRectangle = true;
 
     public DrawLabelsView(Context context) {
         super(context);
@@ -47,7 +48,34 @@ public class DrawLabelsView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return false;
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                float x = event.getX();
+                float y = event.getY();
+
+                for (InstrumentInfoAtFrame info : instrumentInfoAtFrameList) {
+                    if (x > info.x && x < info.x + info.boxWidth && y > info.y && y < info.y + info.boxHeight) {
+                        Log.e("XXXX", "touched " + info.label);
+                    } else {
+
+                        ((VideoFullScreenActivity) getContext()).showController();
+
+                    }
+                }
+
+                return true;
+        }
+
+        return true;
+    }
+
+    public void setDimensions(int screenWidth, int screenHeight) {
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+    }
+
+    public void disableShowRectangle() {
+        this.showRectangle = false;
     }
 
     public void fillLabels(double[][] boxInfo) {
@@ -55,10 +83,10 @@ public class DrawLabelsView extends View {
         for (int i = 0; i < boxInfo.length; i++) {
             double[] infoForInstrument = boxInfo[i];
             String label = INSTRUMENT_LABELS[i];
-            double x = infoForInstrument[0] * SCREEN_WIDTH;
-            double y = infoForInstrument[1] * SCREEN_HEIGHT;
-            double boxWidth = infoForInstrument[2] * SCREEN_WIDTH;
-            double boxHeight = infoForInstrument[3] * SCREEN_HEIGHT;
+            double x = infoForInstrument[0] * this.screenWidth;
+            double y = infoForInstrument[1] * this.screenHeight;
+            double boxWidth = infoForInstrument[2] * this.screenWidth;
+            double boxHeight = infoForInstrument[3] * this.screenHeight;
 
             // if no instrument is labeled at this frame, x, y, boxWidth, boxHeight will all be -1.0
             if (x > 0) {
