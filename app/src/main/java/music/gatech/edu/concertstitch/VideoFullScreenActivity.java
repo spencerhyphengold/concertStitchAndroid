@@ -89,11 +89,6 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         videoHolder = videoSurface.getHolder();
         videoHolder.addCallback(this); // this activity
 
-        videoSurface2 = findViewById(R.id.video_surface2);
-        videoHolder2 = videoSurface2.getHolder();
-        videoHolder2.addCallback(this); // this activity
-        videoSurface2.setVisibility(View.GONE);
-
         videoPlayer = new MediaPlayer();
         audioPlayer = new MediaPlayer();
         controller = new CustomMediaControlView(this);
