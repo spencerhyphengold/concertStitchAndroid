@@ -38,15 +38,11 @@ public class VideoPageActivity extends AppCompatActivity {
         currentVideoSrc = BASE_VIDEO_URI;
         currentVideoName = VIDEO_NAMES[0]; // this is the house video
 
-        Uri video = Uri.parse(currentVideoSrc);
-
-        mainVideoView.setVideoURI(video); // this sets the screen to proper size
-
         final ReadAnnotationsTask readAnnotationsTask = new ReadAnnotationsTask();
         readAnnotationsTask.execute();
 
-        final ReadMediaSourceTask readMediaSourceTask = new ReadMediaSourceTask();
-        readMediaSourceTask.execute();
+//        final ReadMediaSourceTask readMediaSourceTask = new ReadMediaSourceTask();
+//        readMediaSourceTask.execute();
 
 
         // clicking on the VideoView should take one to full screen view
@@ -54,7 +50,7 @@ public class VideoPageActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (readAnnotationsTask.getStatus() == AsyncTask.Status.FINISHED
-                        && readMediaSourceTask.getStatus() == AsyncTask.Status.FINISHED) {
+                        ) {
 
                     Intent fullVideoIntent = new Intent(getApplicationContext(), VideoFullScreenActivity.class);
                     fullVideoIntent.putExtra("currentVideoSrc", currentVideoSrc);
@@ -97,10 +93,10 @@ public class VideoPageActivity extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
-            //super.onPreExecute();
+
 
             this.dialog.setMessage("Loading annotations.");
-            this.dialog.show();
+            //this.dialog.show();
         }
 
         @Override

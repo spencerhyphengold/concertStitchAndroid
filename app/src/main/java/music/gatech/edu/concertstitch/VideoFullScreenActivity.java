@@ -46,8 +46,13 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
     private SurfaceView videoSurface;
     private SurfaceHolder videoHolder;
+
+    private SurfaceView videoSurface2;
+    private SurfaceHolder videoHolder2;
+
     private MediaPlayer videoPlayer;
     private MediaPlayer audioPlayer;
+    private MediaPlayer videoPlayer2;
 
     private FrameLayout shapeFrame;
 
@@ -84,9 +89,16 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         videoHolder = videoSurface.getHolder();
         videoHolder.addCallback(this); // this activity
 
+        videoSurface2 = findViewById(R.id.video_surface2);
+        videoHolder2 = videoSurface2.getHolder();
+        videoHolder2.addCallback(this); // this activity
+        videoSurface2.setVisibility(View.GONE);
+
         videoPlayer = new MediaPlayer();
         audioPlayer = new MediaPlayer();
         controller = new CustomMediaControlView(this);
+
+        videoPlayer2 = new MediaPlayer();
 
         try {
             videoPlayer.setDataSource(BASE_VIDEO_URI);
@@ -98,6 +110,9 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
             audioPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             audioPlayer.setLooping(false);
             audioPlayer.setOnPreparedListener(this);
+
+            videoPlayer2.setVolume(0f, 0f);
+            videoPlayer2.setLooping(false);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -169,6 +184,25 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
     public void showController() {
         controller.show();
+    }
+
+    // https://stackoverflow.com/questions/8294732/android-media-player-how-to-switch-between-videos
+    public void changeSource(String s) {
+        try {
+            videoPlayer2.setDataSource(s);
+            videoPlayer2.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        videoPlayer2.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                videoPlayer2.start();
+                videoPlayer.setDisplay(null);
+                videoPlayer2.setDisplay(videoHolder);
+            }
+        });
     }
 
     private void drawInstrumentLabels(int currVidFrame) {

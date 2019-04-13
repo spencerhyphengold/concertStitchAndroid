@@ -53,13 +53,15 @@ public class DrawLabelsView extends View {
                 float x = event.getX();
                 float y = event.getY();
 
+                VideoFullScreenActivity fullScreenActivity = (VideoFullScreenActivity) getContext();
+
                 for (InstrumentInfoAtFrame info : instrumentInfoAtFrameList) {
                     if (x > info.x && x < info.x + info.boxWidth && y > info.y && y < info.y + info.boxHeight) {
                         Log.e("XXXX", "touched " + info.label);
+                        fullScreenActivity.changeSource("https://s3.amazonaws.com/concert-stitch-webapp/02_480p.mp4");
                     } else {
 
-                        ((VideoFullScreenActivity) getContext()).showController();
-
+                        fullScreenActivity.showController();
                     }
                 }
 
