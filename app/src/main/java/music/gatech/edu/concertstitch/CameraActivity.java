@@ -132,12 +132,16 @@ public class CameraActivity extends AppCompatActivity implements View.OnClickLis
         camera.setMode(Mode.VIDEO);
         camera.addCameraListener(new CameraListener() {
             @Override
-            public void onPictureTaken(PictureResult result) {
-                // A Picture was taken!
-            }
-            @Override
-            public void onVideoTaken(VideoResult result) {
-                System.out.println(result.getFile().toString());
+            public void onVideoTaken(@NonNull VideoResult result) {
+            TrackingSession trackingSession = trackingFragment.onFinishTracking();
+            trackingSession.addVideoResult(result);
+
+            Intent intent = new Intent(getApplicationContext(), ClassifyActivity.class);
+            Bundle args = new Bundle();
+            args.putSerializable("trackingSession", trackingSession);
+            args.putSerializable("videoPath", videoFile.getAbsolutePath());
+            intent.putExtra("bundle", args);
+            startActivity(intent);
             }
         });
     }
