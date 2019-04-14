@@ -34,7 +34,6 @@ public class XmlEncoder {
             }
             annotations.tracks.add(new Track(player,  trackId++, boxes));
         }
-        annotations.version = annotations.tracks.size();
 
         try {
             Serializer serializer = new Persister();
