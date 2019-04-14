@@ -94,15 +94,13 @@ public class CameraActivity extends AppCompatActivity {
         camera.addCameraListener(new CameraListener() {
             @Override
             public void onVideoTaken(@NonNull VideoResult result) {
-            ArrayList<TrackingFrame> trackingFrames = trackingFragment.onFinishTracking();
-            // toast is a proxy for creating xml with the points, sending to server
-            Toast.makeText(CameraActivity.this, String.format("%d frames(s) ready to send to server", trackingFrames.size()), Toast.LENGTH_SHORT).show();
+            TrackingSession trackingSession = trackingFragment.onFinishTracking();
+            trackingSession.addVideoResult(result);
 
             Intent intent = new Intent(getApplicationContext(), ClassifyActivity.class);
             Bundle args = new Bundle();
-            args.putSerializable("trackingFrames", trackingFrames);
+            args.putSerializable("trackingSession", trackingSession);
             args.putSerializable("videoPath", videoFile.getAbsolutePath());
-            Toast.makeText(getApplicationContext(), videoFile.getAbsolutePath(), Toast.LENGTH_LONG).show();
             intent.putExtra("bundle", args);
             startActivity(intent);
             }

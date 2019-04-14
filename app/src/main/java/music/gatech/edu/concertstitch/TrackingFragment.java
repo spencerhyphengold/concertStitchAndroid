@@ -32,11 +32,8 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
 
     private int READING_DEBOUNCE_TIME = 50;
 
-    private long startRecordingTime;
     private long lastMeasuredTime;
-    private TrackingFrame currTrackingFrame;
-    private ArrayList<TrackingFrame> trackingFrames;
-    private Paint paint;
+    private TrackingSession trackingSession;
     private Path path;
     private TrackingCanvas trackingCanvas;
 
@@ -79,8 +76,7 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        trackingFrames = new ArrayList<>();
-        currTrackingFrame = null;
+        trackingSession = new TrackingSession();
         path = new Path();
 
         trackingCanvas = getView().findViewById(R.id.trackingCanvas);
@@ -90,16 +86,13 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
 
     void onStartTracking() {
         isActive = true;
-        startRecordingTime = System.currentTimeMillis();
+        trackingSession = new TrackingSession();
     }
 
-    ArrayList<TrackingFrame> onFinishTracking() {
-        Toast.makeText(getContext(), "done recording", Toast.LENGTH_SHORT).show();
-        if (currTrackingFrame != null) {
-            currTrackingFrame.endTime = System.currentTimeMillis() - startRecordingTime;
-        }
+    TrackingSession onFinishTracking() {
+        trackingSession.finishTracking();
         isActive = false;
-        return trackingFrames;
+        return trackingSession;
     }
 
     public boolean onTouch(View view, MotionEvent event) {
@@ -109,16 +102,12 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
 
         float xPos = event.getX();
         float yPos = event.getY();
-        long time = event.getEventTime() - startRecordingTime;
+        long time = System.currentTimeMillis();
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 path.moveTo(xPos, yPos);
-                if (currTrackingFrame != null) {
-                    currTrackingFrame.endTime = time;
-                }
-                currTrackingFrame = new TrackingFrame(time, xPos, yPos);
-                trackingFrames.add(currTrackingFrame);
+                trackingSession.addTrackingFrame(time, xPos, yPos);
 
             case MotionEvent.ACTION_MOVE:
                 path.lineTo(xPos, yPos);
@@ -127,16 +116,13 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
                     return false;
                 }
                 lastMeasuredTime = time;
-                currTrackingFrame.addPoint(xPos, yPos);
+                trackingSession.addTrackingPoint(xPos, yPos);
                 break;
 
             case MotionEvent.ACTION_UP:
                 path = new Path();
                 trackingCanvas.path = path;
 
-                float xish = event.getX();
-                float yish = event.getY();
-                Toast.makeText(getContext(), String.format("x: %f\n y: %f", xish, yish), Toast.LENGTH_SHORT).show();
                 break;
 
             default:
