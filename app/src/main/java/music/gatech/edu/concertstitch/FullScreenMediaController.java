@@ -14,13 +14,15 @@ import android.widget.MediaController;
  * @author mcw0805
  */
 public class FullScreenMediaController extends MediaController {
-    private ImageButton fullScreen;
+    private ImageButton exitFullScreenImgBtn;
+    private ImageButton homeVideoImgBtn;
     private String isFullScreen;
+
+    // TODO: add home button
 
     public FullScreenMediaController(Context context) {
         super(context);
     }
-
 
     // enter false for useFastForward if you don't want to see the >> and << buttons
     public FullScreenMediaController(Context context, boolean useFastForward) {
@@ -33,7 +35,8 @@ public class FullScreenMediaController extends MediaController {
         super.setAnchorView(view);
 
         // image button for full screen to be added to media controller
-        fullScreen = new ImageButton (super.getContext());
+        exitFullScreenImgBtn = new ImageButton(super.getContext());
+        homeVideoImgBtn = new ImageButton(super.getContext());
 
         FrameLayout.LayoutParams params =
                 new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
@@ -41,32 +44,63 @@ public class FullScreenMediaController extends MediaController {
 //        FrameLayout.LayoutParams params =
 //                new FrameLayout.LayoutParams(120, 120);
         params.gravity = Gravity.RIGHT;
+        params.rightMargin = 20;
+        addView(exitFullScreenImgBtn, params);
+
+        exitFullScreenImgBtn.setImageResource(R.drawable.exit_full_screen_icon);
+        exitFullScreenImgBtn.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+
+
+        FrameLayout.LayoutParams params2 =
+                new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
+                        LayoutParams.WRAP_CONTENT);
+//        FrameLayout.LayoutParams params =
+//                new FrameLayout.LayoutParams(120, 120);
+        params.gravity = Gravity.RIGHT;
         params.topMargin = 30;
-        params.rightMargin = 80;
-        fullScreen.setImageResource(R.drawable.exit_full_screen_sm);
-        fullScreen.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        addView(fullScreen, params);
+        params.rightMargin = 120;
+        // https://www.flaticon.com/free-icon/home_25694
+        homeVideoImgBtn.setImageResource(R.drawable.home_icon);
+        homeVideoImgBtn.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        addView(homeVideoImgBtn, params2);
+
 
         //fullscreen indicator from intent
-        isFullScreen =  ((Activity)getContext()).getIntent().
+        isFullScreen = ((Activity) getContext()).getIntent().
                 getStringExtra("fullScreenInd");
 
 
         // add listener to image button to handle full screen and exit full screen events
-        fullScreen.setOnClickListener(new OnClickListener() {
+        exitFullScreenImgBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(getContext(),VideoPageActivity.class);
+                // go back to previous activity, which is VideoPageActivity
+                if (getContext() instanceof FullScreenActivityOld) {
 
-                if("y".equals(isFullScreen)){
-                    intent.putExtra("fullScreenInd", "");
-                }else{
-                    intent.putExtra("fullScreenInd", "y");
+                    FullScreenActivityOld fullScreenActivity = (FullScreenActivityOld) getContext();
+
+                    Intent intent = new Intent();
+                    intent.putExtra("currentPlayPos", fullScreenActivity.getCurrentPlayPos());
+                    fullScreenActivity.setResult(Activity.RESULT_OK, intent);
+
+                    ((Activity) getContext()).finish();
                 }
-                getContext().startActivity(intent);
+//                Intent intent = new Intent(getContext(),VideoPageActivity.class);
+//
+//                if("y".equals(isFullScreen)){
+//                    intent.putExtra("fullScreenInd", "");
+//                }else{
+//                    intent.putExtra("fullScreenInd", "y");
+//                }
+//                getContext().startActivity(intent);
             }
         });
 
     }
+//
+//    @Override
+//    public void show(int timeout) {
+//
+//    }
 }
