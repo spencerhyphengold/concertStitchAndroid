@@ -84,23 +84,11 @@ public class XmlEncoder {
 //        @Element
         int id, name, size, overlap;
 //        @Element
-//        int name;
-//        @Element
-//        int size;
-//        @Element
         String mode, bugTracker, source;
-//        @Element
-//        int overlap;
-//        @Element
-//        String bugTracker;
 //        @Element
         boolean flipped;
 //        @Element
         Date created, updated;
-//        @Element
-//        Date updated;
-//        @Element
-//        String source;
         @ElementList
         List<Label> labels;
 //        @ElementList
@@ -274,6 +262,20 @@ public class XmlEncoder {
     private static class Box {
         @Attribute
         int keyframe;
+        @Attribute
+        int occluded;
+        @Attribute
+        int outside;
+        @Attribute
+        double ybr;
+        @Attribute
+        double xbr;
+        @Attribute
+        double ytl;
+        @Attribute
+        double xtl;
+        @Attribute
+        long frame;
 
         public int getKeyframe() {
             return keyframe;
@@ -306,21 +308,6 @@ public class XmlEncoder {
         public long getFrame() {
             return frame;
         }
-
-        @Attribute
-        int occluded;
-        @Attribute
-        int outside;
-        @Attribute
-        double ybr;
-        @Attribute
-        double xbr;
-        @Attribute
-        double ytl;
-        @Attribute
-        double xtl;
-        @Attribute
-        long frame;
 
         public Box(TrackingSession.Coordinate coordinate) {
             this.keyframe = coordinate.keyframe;
