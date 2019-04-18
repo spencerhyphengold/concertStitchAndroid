@@ -20,7 +20,7 @@ import java.util.List;
 
 public class ClassifyActivity extends AppCompatActivity {
 
-    private MediaMetadataRetriever media = new MediaMetadataRetriever();
+    private MediaMetadataRetriever media;
     private TrackingSession trackingSession;
     private List<TrackingSession.TrackingFrame> trackingFrames;
     private TrackingSession.TrackingFrame currTrackingFrame;
@@ -43,6 +43,8 @@ public class ClassifyActivity extends AppCompatActivity {
 
         framePreview = findViewById(R.id.framePreview);
         nextFrameBtn = findViewById(R.id.nextFrameBtn);
+        media = new MediaMetadataRetriever();
+        media.setDataSource(videoPath);
 
         trackingFrames = trackingSession.getTrackingFrames();
         if (trackingFrames.size() == 0) {
@@ -51,30 +53,13 @@ public class ClassifyActivity extends AppCompatActivity {
             return;
         }
         currIndex = 0;
-        currTrackingFrame = trackingFrames.get(0);
-        media.setDataSource(videoPath);
-        currImage = media.getFrameAtTime(currTrackingFrame.startTime, MediaMetadataRetriever.OPTION_CLOSEST);
-        framePreview.setImageBitmap(currImage);
+        updatePage();
 
         nextFrameBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 currIndex++;
-                if (currIndex >= trackingFrames.size()) {
-                    String xmlTargetPath = Environment.getExternalStorageDirectory() +
-                            File.separator + "ConcertStitch" + File.separator + "testOutput.xml";
-                    File xmlTarget = new File(xmlTargetPath);
-                    XmlEncoder.saveXmlFromTrackingSession(trackingSession, xmlTarget);
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    startActivity(intent);
-                    return;
-                }
-                currTrackingFrame = trackingFrames.get(currIndex);
-                currImage = media.getFrameAtTime(currTrackingFrame.startTime, MediaMetadataRetriever.OPTION_CLOSEST);
-                framePreview.setImageBitmap(currImage);
-                if (currIndex == trackingFrames.size() - 1) {
-                    nextFrameBtn.setText("Submit");
-                }
+                updatePage();
             }
         });
 
@@ -96,5 +81,23 @@ public class ClassifyActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void updatePage() {
+        if (currIndex >= trackingFrames.size()) {
+            String xmlTargetPath = Environment.getExternalStorageDirectory() +
+                    File.separator + "ConcertStitch" + File.separator + "testOutput.xml";
+            File xmlTarget = new File(xmlTargetPath);
+            XmlEncoder.saveXmlFromTrackingSession(trackingSession, xmlTarget);
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+            return;
+        } else if (currIndex == trackingFrames.size() - 1) {
+            nextFrameBtn.setText("Submit");
+        }
+        currTrackingFrame = trackingFrames.get(currIndex);
+        Toast.makeText(this, Float.toString(currTrackingFrame.startTime), Toast.LENGTH_SHORT).show();
+        currImage = media.getFrameAtTime(currTrackingFrame.startTime * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
+        framePreview.setImageBitmap(currImage);
     }
 }
