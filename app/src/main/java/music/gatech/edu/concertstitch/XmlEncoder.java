@@ -1,5 +1,7 @@
 package music.gatech.edu.concertstitch;
 
+import android.util.Log;
+
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
@@ -7,7 +9,10 @@ import org.simpleframework.xml.Root;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -19,27 +24,50 @@ public class XmlEncoder {
         annotations.version = 1.1;
         annotations.meta = new Meta();
         annotations.meta.task = new Task();
-        List<Label> labels = new ArrayList<>();
-        for (String player : trackingSession.playerMap.keySet()) {
-            labels.add(new Label(player));
-        }
-        annotations.meta.task.labels = labels;
 
-        annotations.tracks = new ArrayList<>();
-        int trackId = 0;
+        annotations.meta.task.labels = new ArrayList<>();
         for (String player : trackingSession.playerMap.keySet()) {
-            List<Box> boxes = new ArrayList<>();
-            for (TrackingSession.Coordinate coordinate : trackingSession.playerMap.get(player)) {
-                boxes.add(new Box(coordinate));
-            }
-            annotations.tracks.add(new Track(player,  trackId++, boxes));
+            annotations.meta.task.labels.add(new Label(player));
         }
 
         try {
             Serializer serializer = new Persister();
             serializer.write(annotations, saveFile);
         } catch (Exception e) {
-            System.out.println(":/");
+            Log.e("ME_TAG", "saveXmlFromTrackingSession: could not write initial XML to file");
+        }
+
+        // hard code writing tracks because SimpleXML doesn't support lists with attributes
+        try {
+            // remove closing </annotations> tag
+            RandomAccessFile raf = new RandomAccessFile(saveFile.getPath(), "rw");
+            raf.setLength(raf.length() - "</annotations>".length());
+            raf.close();
+
+            // write player coordinates to xml file
+            BufferedWriter writer = new BufferedWriter(new FileWriter(saveFile, true));
+            StringBuilder builder = new StringBuilder();
+            int id = 0;
+            for (String player : trackingSession.playerMap.keySet()) {
+                builder.append("\t<track label=\"");
+                builder.append(player);
+                builder.append("\" id=\"");
+                builder.append(id++);
+                builder.append("\">\n");
+                List<TrackingSession.Coordinate> coordinates = trackingSession.playerMap.get(player);
+                for (TrackingSession.Coordinate coordinate : coordinates) {
+                    builder.append("\t\t");
+                    builder.append(coordinate.toString());
+                    builder.append("\n");
+                }
+                builder.append("\t</track>\n");
+            }
+            builder.append("</annotations>");
+
+            writer.write(new String(builder));
+            writer.close();
+        } catch (Exception e) {
+            Log.e("ME_TAG", "saveXmlFromTrackingSession: could not write tracking boxes to file");
         }
     }
 
@@ -49,7 +77,7 @@ public class XmlEncoder {
         double version;
         @Element
         Meta meta;
-        @ElementList
+//        @ElementList
         List<Track> tracks;
 
         public double getVersion() {
@@ -79,6 +107,7 @@ public class XmlEncoder {
             return dumped;
         }
     }
+
     private static class Task {
 //        @Element
         int id, name, size, overlap;
