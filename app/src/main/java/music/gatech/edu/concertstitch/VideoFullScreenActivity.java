@@ -393,9 +393,9 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        if (!currentVideoName.equals("demo")) {
+        //if (!currentVideoName.equals("demo")) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }
+        //}
         videoPlayer.setDisplay(surfaceHolder);
         videoPlayer.prepareAsync();
         if (!currentVideoName.equals("demo")) {
