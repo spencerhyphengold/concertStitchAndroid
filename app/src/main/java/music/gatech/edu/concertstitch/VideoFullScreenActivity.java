@@ -25,6 +25,8 @@ import android.widget.TextView;
 import android.widget.VideoView;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static music.gatech.edu.concertstitch.ParseMedia.annotationsMap;
 import static music.gatech.edu.concertstitch.ParseMedia.syncMap;
@@ -32,16 +34,14 @@ import static music.gatech.edu.concertstitch.ResourceConstants.AUDIO_URI;
 import static music.gatech.edu.concertstitch.ResourceConstants.BASE_VIDEO_URI;
 import static music.gatech.edu.concertstitch.ResourceConstants.FPS;
 import static music.gatech.edu.concertstitch.ResourceConstants.INSTRUMENT_LABELS;
+import static music.gatech.edu.concertstitch.ResourceConstants.VIDEO_NAMES;
 
 public class VideoFullScreenActivity extends AppCompatActivity implements SurfaceHolder.Callback, MediaPlayer.OnPreparedListener, CustomMediaControlView.MediaPlayerControl {
 
     public final static int EXIT_FULL_SCREEN_REQUEST_CODE = 1;
 
-    public static boolean fullScreenActive = false;
-
-    final int SCREEN_WIDTH = Resources.getSystem().getDisplayMetrics().widthPixels;
-    final int SCREEN_HEIGHT = Resources.getSystem().getDisplayMetrics().heightPixels;
-
+    public final int SCREEN_WIDTH = Resources.getSystem().getDisplayMetrics().widthPixels;
+    public final int SCREEN_HEIGHT = Resources.getSystem().getDisplayMetrics().heightPixels;
 
     private String currentVideoName;
     private String currentVideoSrc;
@@ -49,8 +49,11 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
     private SurfaceView videoSurface;
     private SurfaceHolder videoHolder;
+
     private MediaPlayer videoPlayer;
     private MediaPlayer audioPlayer;
+
+    private MediaPlayer videoPlayer2;
 
     private FrameLayout shapeFrame;
 
@@ -91,17 +94,24 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         audioPlayer = new MediaPlayer();
         controller = new CustomMediaControlView(this);
 
+        videoPlayer2 = new MediaPlayer();
+
+
         try {
-            videoPlayer.setDataSource(BASE_VIDEO_URI);
+            videoPlayer.setDataSource(currentVideoSrc);
             videoPlayer.setVolume(0f, 0f);
             videoPlayer.setLooping(false);
             videoPlayer.setOnPreparedListener(this);
 
-            audioPlayer.setDataSource(AUDIO_URI);
-            audioPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            audioPlayer.setLooping(false);
-            audioPlayer.setOnPreparedListener(this);
+            if (!currentVideoName.equals("demo")) {
+                audioPlayer.setDataSource(audioSrc);
+                audioPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                audioPlayer.setLooping(false);
+                audioPlayer.setOnPreparedListener(this);
+            }
 
+            videoPlayer2.setVolume(0f, 0f);
+            videoPlayer2.setLooping(false);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -110,7 +120,16 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         shapeFrame = findViewById(R.id.shape_fl);
         //shapeFrame.setVisibility(View.GONE);
 
+    }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (!currentVideoName.equals("demo")) {
+            audioPlayer.release();
+            videoPlayer.release();
+        }
+        videoPlayer2.release();
     }
 
     // label display test
@@ -122,21 +141,30 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
         int currPos = getCurrentPosition();
         int currVidFrame = currPos / 1000 * FPS;
+
+        if (currentVideoName.equals("demo")) {
+            currVidFrame = currVidFrame / FPS * 30;
+        }
+
         Log.e("TOUCH-playing", isPlaying() + "");
         Log.e("TOUCH-audioPos", (currPos) + "");
-        Log.e("TOUCH-Frame", currentVideoName + " " + (currFrame) + "");
+        Log.e("TOUCH-Frame", currentVideoName + " " + (currVidFrame) + "");
 
-        Log.e("width",  SCREEN_WIDTH + "");
+        Log.e("width", SCREEN_WIDTH + "");
         Log.e("height", SCREEN_HEIGHT + "");
+
+//        if (annotationsMap != null) {
+//            if (annotationsMap.get("demo") != null && annotationsMap.get("demo").get(currVidFrame) != null) {
+//                Log.e("ZZZZ", annotationsMap.get("demo").get(currVidFrame)[4][2] + "");
+//            }
+//        }
 
 
         if (controller.isShowing()) {
             shapeFrame.removeAllViews();
         }
 
-        //addOneTextView();
-
-        drawInstrumentLabels(currVidFrame);
+        addLabelView(currVidFrame);
         setUpFadeAnimation(shapeFrame);
 
         controller.show();
@@ -149,7 +177,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         tv.setTextColor(Color.WHITE);
         //tv.setX(0);
         //tv.setY(-10);
-        tv.setPadding(0,0,0,0);
+        tv.setPadding(0, 0, 0, 0);
 
 
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
@@ -160,6 +188,73 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         tv.setLayoutParams(layoutParams);
 
         shapeFrame.addView(tv);
+    }
+
+    private void addLabelView(int currVidFrame){
+        DrawLabelsView drawLabelsView = new DrawLabelsView(this);
+        double[][]boxInfo = annotationsMap.get(currentVideoName).get(currVidFrame);
+
+        if (boxInfo != null) {
+            drawLabelsView.setDimensions(SCREEN_WIDTH, SCREEN_HEIGHT);
+            drawLabelsView.fillLabels(boxInfo, currentVideoName);
+            shapeFrame.addView(drawLabelsView);
+        }
+
+    }
+
+    public void showController() {
+        controller.show();
+    }
+
+    // https://stackoverflow.com/questions/8294732/android-media-player-how-to-switch-between-videos
+    public void changeSource(final String src, final String srcVidName) {
+        try {
+            videoPlayer2.setDataSource(src); // change currentVideoName + currentVideoSrc
+            currentVideoName = srcVidName;
+            currentVideoSrc = src;
+
+            videoPlayer2.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        videoPlayer2.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                if (!isPlaying()) { // paused so just seek
+                    videoPlayer2.seekTo(audioPlayer.getCurrentPosition()/1000 -  (int)Math.floor(syncMap.get(srcVidName)[0]) );
+                    videoPlayer.setDisplay(null);
+                    videoPlayer2.setDisplay(videoHolder);
+                } else {
+                    videoPlayer2.start();
+                    videoPlayer.setDisplay(null);
+                    videoPlayer2.setDisplay(videoHolder);
+                }
+
+                seekTo(audioPlayer.getCurrentPosition());
+
+                shapeFrame.removeAllViews();
+
+            }
+        });
+    }
+
+    public List<String> checkVideoPresent(int labelId) {
+
+        List<String> videosForLabel = new ArrayList<>();
+        int currPos = getCurrentPosition();
+        int currVidFrame = currPos / 1000 * FPS;
+        for (String v : VIDEO_NAMES) {
+            if (!v.equals(currentVideoName)) {
+                if (annotationsMap.get(v).get(currVidFrame)!= null
+                        && annotationsMap.get(v).get(currVidFrame)[labelId] != null) {
+                    videosForLabel.add(v);
+                }
+            }
+        }
+
+        return videosForLabel;
+
     }
 
     private void drawInstrumentLabels(int currVidFrame) {
@@ -182,23 +277,20 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
                         FrameLayout.LayoutParams.WRAP_CONTENT,
                         FrameLayout.LayoutParams.WRAP_CONTENT);
 
-
                 instrumentLabelLayoutParams.leftMargin = (int) (x * SCREEN_WIDTH - 50);
                 instrumentLabelLayoutParams.topMargin = (int) (y * SCREEN_HEIGHT + 50);
 
-
                 Log.e("text-views-currinstr", INSTRUMENT_LABELS[i]);
-                Log.e("real-x", + x + "");
-                Log.e("real-y", + y + "");
-                Log.e("real-boxw", + boxWidth + "");
-                Log.e("real-boxh", + boxHeight + "");
+                Log.e("real-x", +x + "");
+                Log.e("real-y", +y + "");
+                Log.e("real-boxw", +boxWidth + "");
+                Log.e("real-boxh", +boxHeight + "");
                 Log.e("textview-x", "" + (x * SCREEN_WIDTH));
                 Log.e("textview-y", "" + (y * SCREEN_HEIGHT));
                 Log.e("textview-w", "" + (boxWidth * SCREEN_WIDTH));
                 Log.e("textview-h", "" + (boxHeight * SCREEN_HEIGHT));
 
                 instrumentLabelTextView.setLayoutParams(instrumentLabelLayoutParams);
-
 
                 LayerDrawable bottomBorder = getBorders(
                         Color.LTGRAY, // Background color
@@ -225,10 +317,9 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         }
     }
 
-
     // Custom method to generate one or multi side border for a view
     protected LayerDrawable getBorders(int bgColor, int borderColor,
-                                       int left, int top, int right, int bottom){
+                                       int left, int top, int right, int bottom) {
         // Initialize new color drawables
         ColorDrawable borderColorDrawable = new ColorDrawable(borderColor);
         ColorDrawable backgroundColorDrawable = new ColorDrawable(bgColor);
@@ -255,6 +346,10 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         return layerDrawable;
     }
 
+    public String getCurrentVideoName() {
+        return currentVideoName;
+    }
+
     private void setUpFadeAnimation(final FrameLayout textView) {
 
         final Animation fadeIn = new AlphaAnimation(0.0f, 1.0f);
@@ -265,7 +360,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         fadeOut.setDuration(500);
         fadeOut.setStartOffset(3000);
 
-        fadeIn.setAnimationListener(new Animation.AnimationListener(){
+        fadeIn.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationEnd(Animation arg0) {
                 textView.startAnimation(fadeOut);
@@ -280,7 +375,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
             }
         });
 
-        fadeOut.setAnimationListener(new Animation.AnimationListener(){
+        fadeOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationEnd(Animation arg0) {
                 if (isPlaying())
@@ -301,10 +396,14 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        //if (!currentVideoName.equals("demo")) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        //}
         videoPlayer.setDisplay(surfaceHolder);
         videoPlayer.prepareAsync();
-        audioPlayer.prepareAsync();
+        if (!currentVideoName.equals("demo")) {
+            audioPlayer.prepareAsync();
+        }
 
     }
 
@@ -325,44 +424,62 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         controller.setAnchorView((FrameLayout) findViewById(R.id.video_surface_container_frame));
         videoReady = true;
         audioReady = true;
-        videoPlayer.start();
-        audioPlayer.start();
+        start();
 
     }
 
     @Override
     public void start() {
+        if (!currentVideoName.equals("demo")) {
         audioPlayer.start();
+        }
         videoPlayer.start();
     }
 
     @Override
     public void pause() {
         if (isPlaying()) {
-            audioPlayer.pause();
+            if (!currentVideoName.equals("demo")) {
+                audioPlayer.pause();
+            }
             videoPlayer.pause();
         }
     }
 
     @Override
     public int getDuration() {
-        return audioPlayer.getDuration();
+        if (!currentVideoName.equals("demo")) {
+            return audioPlayer.getDuration();
+        }
+        return videoPlayer.getDuration();
     }
 
     @Override
     public int getCurrentPosition() {
+        if (currentVideoName.equals("demo")) {
+            return videoPlayer.getCurrentPosition();
+        }
         return audioPlayer.getCurrentPosition();
+
     }
 
     @Override
     public void seekTo(int pos) {
-        audioPlayer.seekTo(pos);
-        videoPlayer.seekTo(pos);
+        if (currentVideoName.equals("demo")) {
+             videoPlayer.seekTo(pos);
+        } else {
+         audioPlayer.seekTo(pos);
+         }
     }
 
     @Override
     public boolean isPlaying() {
-        return videoPlayer.isPlaying() || audioPlayer.isPlaying();
+        if (currentVideoName.equals("demo")) {
+            return videoPlayer.isPlaying();
+        } else {
+            return audioPlayer.isPlaying();
+        }
+//        return audioPlayer.isPlaying();
     }
 
     @Override
@@ -393,5 +510,18 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
     @Override
     public void toggleFullScreen() {
 
+    }
+
+    @Override
+    public void goHome() {
+        if (!currentVideoName.equals("demo") && !VIDEO_NAMES[0].equals(currentVideoName)) {
+            shapeFrame.removeAllViews();
+            videoPlayer2.setDisplay(null);
+            videoPlayer2.release();
+
+            videoPlayer.setDisplay(videoHolder);
+            videoPlayer.seekTo(getCurrentPosition());
+
+        }
     }
 }

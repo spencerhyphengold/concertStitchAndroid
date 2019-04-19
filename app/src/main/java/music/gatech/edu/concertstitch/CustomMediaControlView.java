@@ -51,6 +51,7 @@ public class CustomMediaControlView extends FrameLayout {
     Formatter mFormatter;
     private ImageButton mPauseButton;
     private ImageButton mFullscreenButton;
+    private ImageButton mHouseButton;
 
     private ImageButton mFfwdButton;
     private ImageButton mRewButton;
@@ -132,6 +133,12 @@ public class CustomMediaControlView extends FrameLayout {
                 seeker.setOnSeekBarChangeListener(mSeekListener);
             }
             mProgress.setMax(1000);
+        }
+
+        mHouseButton = v.findViewById(R.id.house_img_btn);
+        if (mHouseButton != null) {
+            mHouseButton.requestFocus();
+            mHouseButton.setOnClickListener(mHouseBtnListener);
         }
 
         mEndTime = v.findViewById(R.id.total_time);
@@ -218,7 +225,7 @@ public class CustomMediaControlView extends FrameLayout {
             long duration = mPlayer.getDuration();
             long newPosition = (duration * progress) / 1000L;
             mPlayer.seekTo( (int) newPosition);
-            //mAudioPlayer.seekTo( (int) newposition);
+
             if (mCurrentTime != null) {
                 mCurrentTime.setText(stringForTime((int) newPosition));
             }
@@ -239,6 +246,14 @@ public class CustomMediaControlView extends FrameLayout {
         public void onClick(View v) {
             doToggleFullscreen();
             show(sDefaultTimeout);
+        }
+    };
+
+    private View.OnClickListener mHouseBtnListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View view) {
+            mPlayer.goHome();
         }
     };
 
@@ -305,26 +320,6 @@ public class CustomMediaControlView extends FrameLayout {
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     Gravity.BOTTOM
             );
-
-//            TextView tv = new TextView(this.mContext);
-//
-//            GradientDrawable gd = new GradientDrawable();
-//            gd.setColor(0xFF00FF00); // Changes this drawbale to use a single color instead of a gradient
-//            gd.setCornerRadius(5);
-//            gd.setStroke(1, 0xFF000000);
-//            tv.setText("XXXX");
-//            tv.setTextColor(Color.WHITE);
-//            tv.setBackground(gd);
-//
-//            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-//                    FrameLayout.LayoutParams.WRAP_CONTENT,
-//                    FrameLayout.LayoutParams.WRAP_CONTENT);
-//            layoutParams.bottomMargin = 600; // margin in pixels, not dps
-//            layoutParams.leftMargin = 1200; // margin in pixels, not dps
-//            tv.setLayoutParams(layoutParams);
-//
-//
-//            mDynamicFrameLayout.addView(tv);
 
             mAnchor.addView(this, tlp);
             mShowing = true;
@@ -487,6 +482,10 @@ public class CustomMediaControlView extends FrameLayout {
         boolean isFullScreen();
 
         void toggleFullScreen();
+
+        void goHome();
+
+
     }
 
     private static class MessageHandler extends Handler {
