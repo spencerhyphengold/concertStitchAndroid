@@ -33,8 +33,7 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
     private Map<TrackingSession.TrackingFrame, Path> frameToPathMap;
     private Set<TrackingSession.TrackingFrame> activeFrames;
 
-    private boolean isActive;
-    private boolean isLongTouching;
+    private boolean isActive, isDrawing;
     private float downEventXPos;
 
     public static class TrackingCanvas extends GestureOverlayView {
@@ -58,13 +57,6 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(10f);
         }
-
-        public void clear() {
-            for (Path path : paths) {
-                path.reset();
-            }
-        }
-
 
         @Override
         public void onDraw(Canvas canvas) {
@@ -104,7 +96,6 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
     }
 
     TrackingSession onFinishTracking() {
-//        trackingCanvas.clear();
         long time = System.currentTimeMillis();
         for (TrackingSession.TrackingFrame trackingFrame : activeFrames) {
             trackingSession.addTrackingFrame(time, trackingFrame);
@@ -127,24 +118,28 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
             case MotionEvent.ACTION_DOWN:
                 currentFrame = trackingSession.createTrackingFrame(time, xPos, yPos);
                 path.moveTo(xPos, yPos);
-                isLongTouching = false;
+                isDrawing = false;
                 downEventXPos = xPos;
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                if (isLongTouching) {
+                if (isDrawing && activeFrames.size() < 5) {
                     path.lineTo(xPos, yPos);
                     currentFrame.coordinate.addPoint(xPos, yPos);
                 }
-                isLongTouching = Math.abs(xPos - downEventXPos) > 5;
+                isDrawing = Math.abs(xPos - downEventXPos) > 5;
                 break;
 
             case MotionEvent.ACTION_UP:
-                if (isLongTouching) {
-                    activeFrames.add(currentFrame);
-                    frameToPathMap.put(currentFrame, path);
-                    path = new Path();
-                    trackingCanvas.paths.add(path);
+                if (isDrawing) {
+                    if (activeFrames.size() > 5) {
+                        Toast.makeText(getContext(), "Cannot draw more than 5 circles. Tap to erase.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        activeFrames.add(currentFrame);
+                        frameToPathMap.put(currentFrame, path);
+                        path = new Path();
+                        trackingCanvas.paths.add(path);
+                    }
                 } else {
                     Iterator<TrackingSession.TrackingFrame> iterator = activeFrames.iterator();
                     while (iterator.hasNext()) {
@@ -157,7 +152,6 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
                         }
                     }
                 }
-
                 break;
 
             default:
