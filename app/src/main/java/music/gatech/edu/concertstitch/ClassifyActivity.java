@@ -17,13 +17,13 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.Iterator;
-import java.util.List;
+import java.util.SortedSet;
 
 public class ClassifyActivity extends AppCompatActivity {
 
     private MediaMetadataRetriever media;
     private TrackingSession trackingSession;
-    private List<TrackingSession.TrackingFrame> trackingFrames;
+    private SortedSet<TrackingSession.TrackingFrame> trackingFrames;
     Iterator<TrackingSession.TrackingFrame> iterator;
     private TrackingSession.TrackingFrame currTrackingFrame;
     private String videoPath;
@@ -75,7 +75,7 @@ public class ClassifyActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int index, long id) {
                 String playerLabel = adapterView.getItemAtPosition(index).toString();
-                trackingSession.addPlayerLabel(currIndex, playerLabel);
+                trackingSession.addPlayerLabel(currTrackingFrame, playerLabel);
             }
 
             @Override

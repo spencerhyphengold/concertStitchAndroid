@@ -13,10 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class TrackingSession implements Serializable {
-    private List<TrackingFrame> trackingFrames;
-    private TrackingFrame currTrackingFrame;
+    private SortedSet<TrackingFrame> trackingFrames;
     int id;
     int name;
     int size;
@@ -36,8 +37,7 @@ public class TrackingSession implements Serializable {
 
 
     TrackingSession() {
-        this.trackingFrames = new ArrayList<>();
-        this.currTrackingFrame = null;
+        this.trackingFrames = new TreeSet<>();
         this.id = 0;
         this.name = 0;
         this.mode = "interpolation";
@@ -56,19 +56,18 @@ public class TrackingSession implements Serializable {
         this.frameRate = result.getVideoFrameRate();
     }
 
-    void addPlayerLabel(int index, String player) {
-        currTrackingFrame = trackingFrames.get(index);
+    void addPlayerLabel(TrackingFrame trackingFrame, String player) {
         List<Coordinate> coordinates = playerMap.get(player);
         if (coordinates == null) {
             coordinates = new ArrayList<>();
             playerMap.put(player, coordinates);
         }
 
-        long startFrame = Math.round(currTrackingFrame.startTime / 1000. * this.frameRate);
-        long endFrame = Math.round(currTrackingFrame.endTime  / 1000. * this.frameRate);
+        long startFrame = Math.round(trackingFrame.startTime / 1000. * this.frameRate);
+        long endFrame = Math.round(trackingFrame.endTime  / 1000. * this.frameRate);
 
-        Coordinate originalCoordinate = currTrackingFrame.coordinate;
-        for (long i = startFrame; i < endFrame; i += 1) {
+        Coordinate originalCoordinate = trackingFrame.coordinate;
+        for (long i = startFrame; i < endFrame; i++) {
             Coordinate coordinate = new Coordinate(originalCoordinate, i);
             coordinates.add(coordinate);
         }
@@ -76,17 +75,16 @@ public class TrackingSession implements Serializable {
 
     TrackingFrame createTrackingFrame(long time, float xPos, float yPos) {
         time = time - startRecordingTime;
-        currTrackingFrame = new TrackingFrame(time, xPos, yPos);
-        return currTrackingFrame;
+        return new TrackingFrame(time, xPos, yPos);
     }
 
     void addTrackingFrame(long time, TrackingFrame trackingFrame) {
         time = time - startRecordingTime;
-        currTrackingFrame.endTime = time;
-        trackingFrames.add(currTrackingFrame);
+        trackingFrame.endTime = time;
+        trackingFrames.add(trackingFrame);
     }
 
-    List<TrackingFrame> getTrackingFrames() {
+    SortedSet<TrackingFrame> getTrackingFrames() {
         return trackingFrames;
     }
 
