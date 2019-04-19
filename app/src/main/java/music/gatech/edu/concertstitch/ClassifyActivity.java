@@ -73,7 +73,6 @@ public class ClassifyActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int index, long id) {
                 String playerLabel = adapterView.getItemAtPosition(index).toString();
                 trackingSession.addPlayerLabel(currIndex, playerLabel);
-                Toast.makeText(ClassifyActivity.this, Integer.toString(trackingSession.playerMap.get(playerLabel).size()), Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -96,7 +95,6 @@ public class ClassifyActivity extends AppCompatActivity {
             nextFrameBtn.setText("Submit");
         }
         currTrackingFrame = trackingFrames.get(currIndex);
-        Toast.makeText(this, Float.toString(currTrackingFrame.startTime), Toast.LENGTH_SHORT).show();
         currImage = media.getFrameAtTime(currTrackingFrame.startTime * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
         framePreview.setImageBitmap(currImage);
     }

@@ -28,6 +28,7 @@ public class CameraActivity extends AppCompatActivity {
     private CameraView camera;
     private Button recordBtn;
     private TrackingFragment trackingFragment;
+    private TrackingSession trackingSession;
 
     private boolean isRecording = false;
     public File videoFile;
@@ -70,6 +71,7 @@ public class CameraActivity extends AppCompatActivity {
         isRecording = false;
         recordBtn.setText("Record");
         camera.stopVideo();
+        trackingSession = trackingFragment.onFinishTracking();
     }
 
     private File getVideoFile() {
@@ -84,6 +86,7 @@ public class CameraActivity extends AppCompatActivity {
         if (success) {
             return new File(folderPath + File.separator + "demo.mp4");
         } else {
+            Log.e("MY_TAG", "getVideoFile: could not initialize video file");
             return null;
         }
     }
@@ -94,7 +97,6 @@ public class CameraActivity extends AppCompatActivity {
         camera.addCameraListener(new CameraListener() {
             @Override
             public void onVideoTaken(@NonNull VideoResult result) {
-            TrackingSession trackingSession = trackingFragment.onFinishTracking();
             trackingSession.addVideoResult(result);
 
             Intent intent = new Intent(getApplicationContext(), ClassifyActivity.class);

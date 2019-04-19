@@ -74,18 +74,15 @@ public class TrackingSession implements Serializable {
         }
     }
 
-    public void finishTracking() {
-        if (this.currTrackingFrame != null) {
-            currTrackingFrame.endTime = System.currentTimeMillis() - startRecordingTime;
-        }
+    public TrackingFrame createTrackingFrame(long time, float xPos, float yPos) {
+        time = time - startRecordingTime;
+        currTrackingFrame = new TrackingFrame(time, xPos, yPos);
+        return currTrackingFrame;
     }
 
-    public void addTrackingFrame(long time, float xPos, float yPos) {
+    public void addTrackingFrame(long time, TrackingFrame trackingFrame) {
         time = time - startRecordingTime;
-        if (currTrackingFrame != null) {
-            currTrackingFrame.endTime = time;
-        }
-        currTrackingFrame = new TrackingFrame(time, xPos, yPos);
+        currTrackingFrame.endTime = time;
         trackingFrames.add(currTrackingFrame);
     }
 
@@ -97,7 +94,7 @@ public class TrackingSession implements Serializable {
         return trackingFrames;
     }
 
-    class TrackingFrame implements Serializable {
+    class TrackingFrame implements Serializable, Comparable<TrackingFrame> {
         long startTime, endTime;
         Coordinate coordinate;
         String player;
@@ -105,6 +102,18 @@ public class TrackingSession implements Serializable {
         TrackingFrame(long startTime, float x, float y) {
             this.startTime = startTime;
             this.coordinate = new Coordinate(x, y);
+        }
+
+        @Override
+        public int compareTo(TrackingFrame other) {
+            long diff = this.startTime - other.startTime;
+            if (diff < 0) {
+                return -1;
+            } else if (diff == 0) {
+                return 0;
+            } else {
+                return 1;
+            }
         }
     }
 
@@ -140,6 +149,10 @@ public class TrackingSession implements Serializable {
             } else if (newY > maxY) {
                 maxY = newY;
             }
+        }
+
+        boolean contains(float x, float y) {
+            return x > minX && x < maxX && y > minY && y < maxY;
         }
 
         @Override
