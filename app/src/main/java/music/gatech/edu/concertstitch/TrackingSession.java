@@ -147,35 +147,41 @@ public class TrackingSession implements Serializable {
 
         void rotate(int rotation, int width, int height) {
             Coordinate temp = new Coordinate(this);
+            float x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 
             switch (rotation % 360) {
                 // phone is rotated to the left
                 case 0:
-                    this.minX = temp.minY;
-                    this.maxX = temp.maxY;
-                    this.minY = height - temp.minX;
-                    this.maxY = height - temp.maxX;
+                    x1 = temp.minY;
+                    x2 = temp.maxY;
+                    y1 = height - temp.minX;
+                    y2 = height - temp.maxX;
                     break;
                 // phone is in normal, vertical orientation
                 case 90:
-                    break;
+                    return;
                 // phone is rotated to the right
                 case 180:
-                    this.minX = width - temp.minY;
-                    this.maxX = width - temp.maxY;
-                    this.minY = temp.maxX;
-                    this.maxY = temp.minX;
+                    x1 = width - temp.minY;
+                    x2 = width - temp.maxY;
+                    y1 = temp.maxX;
+                    y2 = temp.minX;
                     break;
                 // phone is upside-down
                 case 270:
-                    this.minX = width - temp.minY;
-                    this.maxX = width - temp.maxY;
-                    this.minY = height - temp.maxX;
-                    this.maxY = height - temp.minX;
+                    x1 = width - temp.minY;
+                    x2 = width - temp.maxY;
+                    y1 = height - temp.maxX;
+                    y2 = height - temp.minX;
                     break;
                 default:
                     Log.e("MY_TAG", "Coordinate.rotate: Rotate value is not a multiple of 90");
             }
+            this.minX = Math.min(x1, x2);
+            this.maxX = Math.max(x1, x2);
+            this.minY = Math.min(y1, y2);
+            this.maxY = Math.max(y1, y2);
+
         }
 
         boolean contains(float x, float y) {
