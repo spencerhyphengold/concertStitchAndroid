@@ -103,6 +103,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
             videoPlayer.setLooping(false);
             videoPlayer.setOnPreparedListener(this);
 
+
             if (!currentVideoName.equals("demo")) {
                 audioPlayer.setDataSource(audioSrc);
                 audioPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -140,10 +141,12 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         Log.e("y", event.getY() + "");
 
         int currPos = getCurrentPosition();
-        int currVidFrame = currPos / 1000 * FPS;
+        int currVidFrame;
 
         if (currentVideoName.equals("demo")) {
-            currVidFrame = currVidFrame / FPS * 30;
+            currVidFrame = currPos / 1000 * 30;
+        } else {
+            currVidFrame = currPos / 1000 * FPS;
         }
 
         Log.e("TOUCH-playing", isPlaying() + "");
@@ -175,8 +178,6 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         TextView tv = new TextView(this);
         tv.setText("Bass");
         tv.setTextColor(Color.WHITE);
-        //tv.setX(0);
-        //tv.setY(-10);
         tv.setPadding(0, 0, 0, 0);
 
 
@@ -190,12 +191,14 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         shapeFrame.addView(tv);
     }
 
-    private void addLabelView(int currVidFrame){
+    private void addLabelView(int currVidFrame) {
+        Log.e("currFrame", currVidFrame + "");
         DrawLabelsView drawLabelsView = new DrawLabelsView(this);
-        double[][]boxInfo = annotationsMap.get(currentVideoName).get(currVidFrame);
+        double[][] boxInfo = annotationsMap.get(currentVideoName).get(currVidFrame);
 
         if (boxInfo != null) {
             drawLabelsView.setDimensions(SCREEN_WIDTH, SCREEN_HEIGHT);
+            Log.e("aaab", boxInfo[0][0] + "");
             drawLabelsView.fillLabels(boxInfo, currentVideoName);
             shapeFrame.addView(drawLabelsView);
         }
@@ -222,7 +225,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
                 if (!isPlaying()) { // paused so just seek
-                    videoPlayer2.seekTo(audioPlayer.getCurrentPosition()/1000 -  (int)Math.floor(syncMap.get(srcVidName)[0]) );
+                    videoPlayer2.seekTo(audioPlayer.getCurrentPosition() / 1000 - (int) Math.floor(syncMap.get(srcVidName)[0]));
                     videoPlayer.setDisplay(null);
                     videoPlayer2.setDisplay(videoHolder);
                 } else {
@@ -246,7 +249,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         int currVidFrame = currPos / 1000 * FPS;
         for (String v : VIDEO_NAMES) {
             if (!v.equals(currentVideoName)) {
-                if (annotationsMap.get(v).get(currVidFrame)!= null
+                if (annotationsMap.get(v).get(currVidFrame) != null
                         && annotationsMap.get(v).get(currVidFrame)[labelId] != null) {
                     videosForLabel.add(v);
                 }
@@ -397,7 +400,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
         //if (!currentVideoName.equals("demo")) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         //}
         videoPlayer.setDisplay(surfaceHolder);
         videoPlayer.prepareAsync();
@@ -431,7 +434,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
     @Override
     public void start() {
         if (!currentVideoName.equals("demo")) {
-        audioPlayer.start();
+            audioPlayer.start();
         }
         videoPlayer.start();
     }
@@ -466,10 +469,10 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
     @Override
     public void seekTo(int pos) {
         if (currentVideoName.equals("demo")) {
-             videoPlayer.seekTo(pos);
+            videoPlayer.seekTo(pos);
         } else {
-         audioPlayer.seekTo(pos);
-         }
+            audioPlayer.seekTo(pos);
+        }
     }
 
     @Override

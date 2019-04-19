@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -133,7 +134,12 @@ public class VideoListActivity extends AppCompatActivity {
         protected Map<?, ?> doInBackground(Void... voids) {
             startTime = System.currentTimeMillis();
             Log.e("ReadingTask", "Parse annotation async task executing...");
-            return ParseMedia.getAnnotationsLocal(annotationPath);
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            retriever.setDataSource(videoPath);
+            int aspectWidth = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
+            int aspectHeight = Integer.valueOf(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+            retriever.release();
+            return ParseMedia.getAnnotationsLocal(annotationPath, aspectWidth, aspectHeight);
 
 //            ParseMedia.getSyncTimes();
 //            return ParseMedia.getAnnotations();
