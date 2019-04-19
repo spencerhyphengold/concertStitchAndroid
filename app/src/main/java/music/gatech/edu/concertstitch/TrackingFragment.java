@@ -66,6 +66,10 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
                 canvas.drawRect(rect, paint);
             }
         }
+
+        void clear() {
+            rectangles.clear();
+        }
     }
 
     public TrackingFragment() {
@@ -101,6 +105,7 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
         for (TrackingSession.TrackingFrame trackingFrame : activeFrames) {
             trackingSession.addTrackingFrame(time, trackingFrame);
         }
+        trackingCanvas.clear();
         isActive = false;
         return trackingSession;
     }

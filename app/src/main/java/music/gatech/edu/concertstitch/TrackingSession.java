@@ -18,9 +18,9 @@ import java.util.TreeSet;
 
 public class TrackingSession implements Serializable {
     private SortedSet<TrackingFrame> trackingFrames;
-    int id, name, size, overlap, width, height, frameRate;
+    int id, name, size, overlap, width, height, frameRate, rotation;
     String mode, bugTracker;
-    boolean flipped;
+    boolean flipped, horizontal;
     Date created, updated, dumped;
     File source;
     Map<String, List<Coordinate>> playerMap;
@@ -45,6 +45,11 @@ public class TrackingSession implements Serializable {
         this.width = result.getSize().getWidth();
         this.height = result.getSize().getHeight();
         this.frameRate = result.getVideoFrameRate();
+
+        this.rotation = result.getRotation();
+        for (TrackingFrame frame : this.trackingFrames) {
+            frame.coordinate.rotate(this.rotation, this.width, this.height);
+        }
     }
 
     void addPlayerLabel(TrackingFrame trackingFrame, String player) {
@@ -58,9 +63,9 @@ public class TrackingSession implements Serializable {
         long endFrame = Math.round(trackingFrame.endTime  / 1000. * this.frameRate);
 
         Coordinate originalCoordinate = trackingFrame.coordinate;
+
         for (long i = startFrame; i < endFrame; i++) {
-            Coordinate coordinate = new Coordinate(originalCoordinate, i);
-            coordinates.add(coordinate);
+            coordinates.add(new Coordinate(originalCoordinate, i));
         }
     }
 
@@ -107,20 +112,24 @@ public class TrackingSession implements Serializable {
         int keyframe, occluded, outside;
         long frame;
 
-        Coordinate(float minX, float minY, float maxX, float maxY, long frame) {
+        Coordinate(float minX, float minY, float maxX, float maxY) {
             this.minX = minX;
             this.minY = minY;
             this.maxX = maxX;
             this.maxY = maxY;
-            this.frame = frame;
         }
 
         Coordinate(float x, float y) {
-            this(x, y, x, y, 0);
+            this(x, y, x, y);
         }
 
         Coordinate(Coordinate other, long frame) {
-            this(other.minX, other.minY, other.maxX, other.maxY, frame);
+            this(other.minX, other.minY, other.maxX, other.maxY);
+            this.frame = frame;
+        }
+
+        Coordinate(Coordinate other) {
+            this(other.minX, other.minY, other.maxX, other.maxY);
         }
 
         void addPoint(float newX, float newY) {
@@ -129,10 +138,43 @@ public class TrackingSession implements Serializable {
             } else if (newX > maxX) {
                 maxX = newX;
             }
-                    if (newY < minY) {
+            if (newY < minY) {
                 minY = newY;
             } else if (newY > maxY) {
                 maxY = newY;
+            }
+        }
+
+        void rotate(int rotation, int width, int height) {
+            Coordinate temp = new Coordinate(this);
+
+            switch (rotation % 360) {
+                // phone is rotated to the left
+                case 0:
+                    this.minX = temp.minY;
+                    this.maxX = temp.maxY;
+                    this.minY = height - temp.minX;
+                    this.maxY = height - temp.maxX;
+                    break;
+                // phone is in normal, vertical orientation
+                case 90:
+                    break;
+                // phone is rotated to the right
+                case 180:
+                    this.minX = width - temp.minY;
+                    this.maxX = width - temp.maxY;
+                    this.minY = temp.maxX;
+                    this.maxY = temp.minX;
+                    break;
+                // phone is upside-down
+                case 270:
+                    this.minX = width - temp.minY;
+                    this.maxX = width - temp.maxY;
+                    this.minY = height - temp.maxX;
+                    this.maxY = height - temp.minX;
+                    break;
+                default:
+                    Log.e("MY_TAG", "Coordinate.rotate: Rotate value is not a multiple of 90");
             }
         }
 
