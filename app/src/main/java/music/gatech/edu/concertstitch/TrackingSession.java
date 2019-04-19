@@ -35,7 +35,7 @@ public class TrackingSession implements Serializable {
     int frameRate;
 
 
-    public TrackingSession() {
+    TrackingSession() {
         this.trackingFrames = new ArrayList<>();
         this.currTrackingFrame = null;
         this.id = 0;
@@ -49,14 +49,14 @@ public class TrackingSession implements Serializable {
         this.playerMap = new HashMap<>();
     }
 
-    public void addVideoResult(VideoResult result) {
+    void addVideoResult(VideoResult result) {
         this.source = result.getFile();
         this.width = result.getSize().getWidth();
         this.height = result.getSize().getHeight();
         this.frameRate = result.getVideoFrameRate();
     }
 
-    public void addPlayerLabel(int index, String player) {
+    void addPlayerLabel(int index, String player) {
         currTrackingFrame = trackingFrames.get(index);
         List<Coordinate> coordinates = playerMap.get(player);
         if (coordinates == null) {
@@ -74,23 +74,19 @@ public class TrackingSession implements Serializable {
         }
     }
 
-    public TrackingFrame createTrackingFrame(long time, float xPos, float yPos) {
+    TrackingFrame createTrackingFrame(long time, float xPos, float yPos) {
         time = time - startRecordingTime;
         currTrackingFrame = new TrackingFrame(time, xPos, yPos);
         return currTrackingFrame;
     }
 
-    public void addTrackingFrame(long time, TrackingFrame trackingFrame) {
+    void addTrackingFrame(long time, TrackingFrame trackingFrame) {
         time = time - startRecordingTime;
         currTrackingFrame.endTime = time;
         trackingFrames.add(currTrackingFrame);
     }
 
-    public void addTrackingPoint(float xPos, float yPos) {
-        currTrackingFrame.coordinate.addPoint(xPos, yPos);
-    }
-
-    public List<TrackingFrame> getTrackingFrames() {
+    List<TrackingFrame> getTrackingFrames() {
         return trackingFrames;
     }
 
