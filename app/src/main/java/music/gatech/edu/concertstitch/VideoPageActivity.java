@@ -15,6 +15,7 @@ import android.widget.VideoView;
 import java.util.Map;
 
 import static music.gatech.edu.concertstitch.FullScreenActivityOld.EXIT_FULL_SCREEN_REQUEST_CODE;
+import static music.gatech.edu.concertstitch.ParseMedia.mediaUrlMap;
 import static music.gatech.edu.concertstitch.ResourceConstants.AUDIO_URI;
 import static music.gatech.edu.concertstitch.ResourceConstants.BASE_VIDEO_URI;
 import static music.gatech.edu.concertstitch.ResourceConstants.VIDEO_NAMES;
@@ -41,16 +42,16 @@ public class VideoPageActivity extends AppCompatActivity {
         final ReadAnnotationsTask readAnnotationsTask = new ReadAnnotationsTask();
         readAnnotationsTask.execute();
 
-//        final ReadMediaSourceTask readMediaSourceTask = new ReadMediaSourceTask();
-//        readMediaSourceTask.execute();
+        final ReadMediaSourceTask readMediaSourceTask = new ReadMediaSourceTask();
+        readMediaSourceTask.execute();
 
 
         // clicking on the VideoView should take one to full screen view
         mainVideoView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (readAnnotationsTask.getStatus() == AsyncTask.Status.FINISHED
-                        ) {
+                if (readAnnotationsTask.getStatus() == AsyncTask.Status.FINISHED &&
+                readMediaSourceTask.getStatus() == AsyncTask.Status.FINISHED) {
 
                     Intent fullVideoIntent = new Intent(getApplicationContext(), VideoFullScreenActivity.class);
                     fullVideoIntent.putExtra("currentVideoSrc", currentVideoSrc);

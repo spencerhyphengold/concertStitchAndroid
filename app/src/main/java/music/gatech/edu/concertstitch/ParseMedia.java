@@ -1,6 +1,8 @@
 package music.gatech.edu.concertstitch;
 
 
+import android.util.Log;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -15,6 +17,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static music.gatech.edu.concertstitch.ResourceConstants.ANNOTATION_BASE_URL;
+import static music.gatech.edu.concertstitch.ResourceConstants.DEMO_LABELS;
 import static music.gatech.edu.concertstitch.ResourceConstants.FPS;
 import static music.gatech.edu.concertstitch.ResourceConstants.INSTRUMENT_LABELS;
 import static music.gatech.edu.concertstitch.ResourceConstants.MEDIA_SRC_URL;
@@ -100,6 +104,94 @@ public class ParseMedia {
         }
 
         return doc;
+    }
+
+    private static Document loadDocumentLocal(String filePath) {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+
+        URL url = null;
+        Document doc = null;
+
+        try {
+            url = (new File(filePath)).toURI().toURL();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            doc = factory.newDocumentBuilder().parse(url.openStream());
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+
+        return doc;
+
+    }
+
+    public static Map<String, HashMap<Integer, double[][]>> getAnnotationsLocal(String annotationsFilePath) {
+        Document doc = loadDocumentLocal(annotationsFilePath);
+        doc.getDocumentElement().normalize();
+
+        Map<String, HashMap<Integer, double[][]>> localAnnotationsMap = new HashMap<>();
+        HashMap<Integer, double[][]> annotationForCurrVid = new HashMap<>();
+
+        // track tag for each instrument
+        NodeList trackList = doc.getElementsByTagName("track");
+        for (int i = 0; i < trackList.getLength(); i++) {
+            String instrumentLabel = trackList.item(i).getAttributes().getNamedItem("label").getNodeValue();
+            NodeList childNodes = trackList.item(i).getChildNodes();
+
+            for (int j = 0; j < childNodes.getLength(); j++) {
+
+                // whitespace counts as a child node, so only look at the element node
+                if (childNodes.item(j).getNodeType() == Node.ELEMENT_NODE) { // get box
+                    Node box = childNodes.item(j);
+                    NamedNodeMap boxAttributes = box.getAttributes();
+
+                    final int frame = Integer.parseInt(boxAttributes.getNamedItem("frame").getNodeValue());
+                    final double xtl = Double.parseDouble(boxAttributes.getNamedItem("xtl").getNodeValue());
+                    final double ytl = Double.parseDouble(boxAttributes.getNamedItem("ytl").getNodeValue());
+                    final double xbr = Double.parseDouble(boxAttributes.getNamedItem("xbr").getNodeValue());
+                    final double ybr = Double.parseDouble(boxAttributes.getNamedItem("ybr").getNodeValue());
+
+                    final double width = (xbr - xtl) / 1280.0;
+                    final double height = (ybr - ytl) / 720.0;
+
+                    int instrumentIndex = Arrays.binarySearch(DEMO_LABELS, instrumentLabel);
+                    if (annotationForCurrVid.get(frame) != null) {
+                        annotationForCurrVid.get(frame)[instrumentIndex][0] = xtl / 1280;
+                        annotationForCurrVid.get(frame)[instrumentIndex][1] = ytl / 720;
+                        annotationForCurrVid.get(frame)[instrumentIndex][2] = width;
+                        annotationForCurrVid.get(frame)[instrumentIndex][3] = height;
+                    } else {
+                        double[][] tempArr = new double[DEMO_LABELS.length][4];
+                        for (double[] row : tempArr) {
+                            Arrays.fill(row, -1);
+                        }
+
+                        annotationForCurrVid.put(frame, tempArr);
+                        annotationForCurrVid.get(frame)[instrumentIndex][0] = xtl / 1280;
+                        annotationForCurrVid.get(frame)[instrumentIndex][1] = ytl / 720;
+                        annotationForCurrVid.get(frame)[instrumentIndex][2] = width;
+                        annotationForCurrVid.get(frame)[instrumentIndex][3] = height;
+                    }
+
+                }
+            } // end inner for
+
+        } // end for
+
+        localAnnotationsMap.put("demo", annotationForCurrVid);
+
+        annotationsMap = null;
+        annotationsMap = localAnnotationsMap;
+        return annotationsMap;
+
     }
 
     public static Map<String, HashMap<Integer, double[][]>> getAnnotations() {

@@ -4,8 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
+import java.io.File;
+import java.io.FilenameFilter;
 
 public class TransitionActivity extends AppCompatActivity {
 
@@ -16,7 +21,6 @@ public class TransitionActivity extends AppCompatActivity {
 
         final Button uploadOrRecordBtn = findViewById(R.id.upload_or_record_btn);
         final Button viewVideoBtn = findViewById(R.id.view_video_btn);
-
 
         uploadOrRecordBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -30,8 +34,8 @@ public class TransitionActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
-                Intent loginToVidIntent = new Intent(getApplicationContext(), VideoPageActivity.class);
-                startActivity(loginToVidIntent);
+                Intent toVidIntent = new Intent(getApplicationContext(), VideoListActivity.class);
+                startActivity(toVidIntent);
 
             }
         });

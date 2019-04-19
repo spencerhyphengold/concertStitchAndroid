@@ -10,8 +10,10 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static music.gatech.edu.concertstitch.ResourceConstants.DEMO_LABELS;
 import static music.gatech.edu.concertstitch.ResourceConstants.INSTRUMENT_LABELS;
 
 /**
@@ -56,9 +58,23 @@ public class DrawLabelsView extends View {
                 VideoFullScreenActivity fullScreenActivity = (VideoFullScreenActivity) getContext();
 
                 for (InstrumentInfoAtFrame info : instrumentInfoAtFrameList) {
+                    Log.e("DrawLabelView", ""+info.label);
                     if (x > info.x && x < info.x + info.boxWidth && y > info.y && y < info.y + info.boxHeight) {
-                        Log.e("XXXX", "touched " + info.label);
-                        fullScreenActivity.changeSource("https://s3.amazonaws.com/concert-stitch-webapp/02_480p.mp4");
+                        Log.e("DrawLabelView", "touched " + info.label);
+                        if (!fullScreenActivity.getCurrentVideoName().equals("demo")) {
+                            int instrumentIndex = Arrays.binarySearch(INSTRUMENT_LABELS, info.label);
+                            List<String> vidsPresent = fullScreenActivity.checkVideoPresent(instrumentIndex);
+
+                            for (String s : vidsPresent) {
+                                Log.e("VidsPresent", s);
+                            }
+
+                            if (info.label.equals("Trombone") && vidsPresent.size() > 0) {
+                                String vidToChangeTo = vidsPresent.get(vidsPresent.size() - 1);
+                                fullScreenActivity.changeSource("https://s3.amazonaws.com/concert-stitch-webapp/" + vidToChangeTo + "_480p.mp4", vidToChangeTo);
+                            }
+                        }
+                        //fullScreenActivity.changeSource("https://s3.amazonaws.com/concert-stitch-webapp/02_480p.mp4");
                     } else {
 
                         fullScreenActivity.showController();
@@ -80,11 +96,16 @@ public class DrawLabelsView extends View {
         this.showRectangle = false;
     }
 
-    public void fillLabels(double[][] boxInfo) {
+    public void fillLabels(double[][] boxInfo, String currVideo) {
 
         for (int i = 0; i < boxInfo.length; i++) {
             double[] infoForInstrument = boxInfo[i];
-            String label = INSTRUMENT_LABELS[i];
+            String label;
+            if (currVideo.equals("demo")) {
+                 label = DEMO_LABELS[i];
+            } else {
+             label = INSTRUMENT_LABELS[i];
+            }
             double x = infoForInstrument[0] * this.screenWidth;
             double y = infoForInstrument[1] * this.screenHeight;
             double boxWidth = infoForInstrument[2] * this.screenWidth;

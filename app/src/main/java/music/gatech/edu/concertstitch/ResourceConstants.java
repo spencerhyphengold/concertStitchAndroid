@@ -15,6 +15,7 @@ public final class ResourceConstants {
     // public final static String[] INSTRUMENT_LABELS = {"Shimon", "Trumpet", "Trombone", "Drums", "Bass", "Guitar", "Saxophone"};
     // in alphabetical order
     public static final String[] INSTRUMENT_LABELS = {"Bass", "Drums", "Guitar", "Saxophone", "Shimon", "Trombone", "Trumpet"};
+    public static final String[] DEMO_LABELS = {"Bass", "Drums", "Guitar", "Keyboard", "Singer"};
 
     public static final String[] SHOT_BY = {"House", "Mike A.", "Chris H.", "Kai R.", "Ryan R.",
             "Raghav S.", "Gil W.", "Ning Y.", "Richard S.", "Keshav B.",
