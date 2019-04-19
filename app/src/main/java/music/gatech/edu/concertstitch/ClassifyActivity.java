@@ -16,6 +16,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.List;
 
 public class ClassifyActivity extends AppCompatActivity {
@@ -23,6 +24,7 @@ public class ClassifyActivity extends AppCompatActivity {
     private MediaMetadataRetriever media;
     private TrackingSession trackingSession;
     private List<TrackingSession.TrackingFrame> trackingFrames;
+    Iterator<TrackingSession.TrackingFrame> iterator;
     private TrackingSession.TrackingFrame currTrackingFrame;
     private String videoPath;
     private Bitmap currImage;
@@ -53,6 +55,7 @@ public class ClassifyActivity extends AppCompatActivity {
             return;
         }
         currIndex = 0;
+        iterator = trackingFrames.iterator();
         updatePage();
 
         nextFrameBtn.setOnClickListener(new View.OnClickListener() {
@@ -94,7 +97,7 @@ public class ClassifyActivity extends AppCompatActivity {
         } else if (currIndex == trackingFrames.size() - 1) {
             nextFrameBtn.setText("Submit");
         }
-        currTrackingFrame = trackingFrames.get(currIndex);
+        currTrackingFrame = iterator.next();
         currImage = media.getFrameAtTime(currTrackingFrame.startTime * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
         framePreview.setImageBitmap(currImage);
     }
