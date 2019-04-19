@@ -104,10 +104,10 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
             videoPlayer.setOnPreparedListener(this);
 
             if (!currentVideoName.equals("demo")) {
-            audioPlayer.setDataSource(audioSrc);
-            audioPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            audioPlayer.setLooping(false);
-            audioPlayer.setOnPreparedListener(this);
+                audioPlayer.setDataSource(audioSrc);
+                audioPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                audioPlayer.setLooping(false);
+                audioPlayer.setOnPreparedListener(this);
             }
 
             videoPlayer2.setVolume(0f, 0f);
@@ -141,6 +141,11 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
         int currPos = getCurrentPosition();
         int currVidFrame = currPos / 1000 * FPS;
+
+        if (currentVideoName.equals("demo")) {
+            currVidFrame = currVidFrame / FPS * 30;
+        }
+
         Log.e("TOUCH-playing", isPlaying() + "");
         Log.e("TOUCH-audioPos", (currPos) + "");
         Log.e("TOUCH-Frame", currentVideoName + " " + (currVidFrame) + "");

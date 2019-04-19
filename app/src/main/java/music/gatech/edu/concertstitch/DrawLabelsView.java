@@ -69,7 +69,7 @@ public class DrawLabelsView extends View {
                                 Log.e("VidsPresent", s);
                             }
 
-                            if (info.label.equals("Trombone") && vidsPresent.size() > 0) {
+                            if (info.label.equals("Shimon") && vidsPresent.size() > 0) {
                                 String vidToChangeTo = vidsPresent.get(vidsPresent.size() - 1);
                                 fullScreenActivity.changeSource("https://s3.amazonaws.com/concert-stitch-webapp/" + vidToChangeTo + "_480p.mp4", vidToChangeTo);
                             }

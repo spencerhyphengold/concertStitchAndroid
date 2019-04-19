@@ -132,7 +132,7 @@ public class VideoListActivity extends AppCompatActivity {
         @Override
         protected Map<?, ?> doInBackground(Void... voids) {
             startTime = System.currentTimeMillis();
-            Log.e("ReadAnnoTask", "Parse annotation async task executing...");
+            Log.e("ReadingTask", "Parse annotation async task executing...");
             return ParseMedia.getAnnotationsLocal(annotationPath);
 
 //            ParseMedia.getSyncTimes();
@@ -154,8 +154,8 @@ public class VideoListActivity extends AppCompatActivity {
             endTime = System.currentTimeMillis();
             long timeTaken = endTime - startTime;
 
-            Log.e("ReadAnnoTask", "Parse annotation async task finished...");
-            Log.e("ReadAnnoTask", "Time taken to parse: " + timeTaken / 1000 + " sec");
+            Log.e("ReadingTask", "Parse annotation async task finished...");
+            Log.e("ReadingTask", "Time taken to parse: " + timeTaken / 1000 + " sec");
 
             if (dialog.isShowing()) {
                 dialog.dismiss();
