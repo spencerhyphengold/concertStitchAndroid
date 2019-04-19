@@ -18,22 +18,13 @@ import java.util.TreeSet;
 
 public class TrackingSession implements Serializable {
     private SortedSet<TrackingFrame> trackingFrames;
-    int id;
-    int name;
-    int size;
-    String mode;
-    int overlap;
-    String bugTracker;
+    int id, name, size, overlap, width, height, frameRate;
+    String mode, bugTracker;
     boolean flipped;
-    Date created;
-    Date updated;
+    Date created, updated, dumped;
     File source;
-    int width;
-    int height;
-    Date dumped;
     Map<String, List<Coordinate>> playerMap;
     long startRecordingTime;
-    int frameRate;
 
 
     TrackingSession() {
