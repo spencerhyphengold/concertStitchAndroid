@@ -13,31 +13,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class TrackingSession implements Serializable {
-    private List<TrackingFrame> trackingFrames;
-    private TrackingFrame currTrackingFrame;
-    int id;
-    int name;
-    int size;
-    String mode;
-    int overlap;
-    String bugTracker;
-    boolean flipped;
-    Date created;
-    Date updated;
+    private SortedSet<TrackingFrame> trackingFrames;
+    int id, name, size, overlap, width, height, frameRate, rotation;
+    String mode, bugTracker;
+    boolean flipped, horizontal;
+    Date created, updated, dumped;
     File source;
-    int width;
-    int height;
-    Date dumped;
     Map<String, List<Coordinate>> playerMap;
     long startRecordingTime;
-    int frameRate;
 
 
-    public TrackingSession() {
-        this.trackingFrames = new ArrayList<>();
-        this.currTrackingFrame = null;
+    TrackingSession() {
+        this.trackingFrames = new TreeSet<>();
         this.id = 0;
         this.name = 0;
         this.mode = "interpolation";
@@ -49,55 +40,51 @@ public class TrackingSession implements Serializable {
         this.playerMap = new HashMap<>();
     }
 
-    public void addVideoResult(VideoResult result) {
+    void addVideoResult(VideoResult result) {
         this.source = result.getFile();
         this.width = result.getSize().getWidth();
         this.height = result.getSize().getHeight();
         this.frameRate = result.getVideoFrameRate();
+
+        this.rotation = result.getRotation();
+        for (TrackingFrame frame : this.trackingFrames) {
+            frame.coordinate.rotate(this.rotation, this.width, this.height);
+        }
     }
 
-    public void addPlayerLabel(int index, String player) {
-        currTrackingFrame = trackingFrames.get(index);
+    void addPlayerLabel(TrackingFrame trackingFrame, String player) {
         List<Coordinate> coordinates = playerMap.get(player);
         if (coordinates == null) {
             coordinates = new ArrayList<>();
             playerMap.put(player, coordinates);
         }
 
-        long startFrame = Math.round(currTrackingFrame.startTime / 1000. * this.frameRate);
-        long endFrame = Math.round(currTrackingFrame.endTime  / 1000. * this.frameRate);
+        long startFrame = Math.round(trackingFrame.startTime / 1000. * this.frameRate);
+        long endFrame = Math.round(trackingFrame.endTime  / 1000. * this.frameRate);
 
-        Coordinate originalCoordinate = currTrackingFrame.coordinate;
-        for (long i = startFrame; i < endFrame; i += 1) {
-            Coordinate coordinate = new Coordinate(originalCoordinate, i);
-            coordinates.add(coordinate);
+        Coordinate originalCoordinate = trackingFrame.coordinate;
+
+        for (long i = startFrame; i < endFrame; i++) {
+            coordinates.add(new Coordinate(originalCoordinate, i));
         }
     }
 
-    public void finishTracking() {
-        if (this.currTrackingFrame != null) {
-            currTrackingFrame.endTime = System.currentTimeMillis() - startRecordingTime;
-        }
-    }
-
-    public void addTrackingFrame(long time, float xPos, float yPos) {
+    TrackingFrame createTrackingFrame(long time, float xPos, float yPos) {
         time = time - startRecordingTime;
-        if (currTrackingFrame != null) {
-            currTrackingFrame.endTime = time;
-        }
-        currTrackingFrame = new TrackingFrame(time, xPos, yPos);
-        trackingFrames.add(currTrackingFrame);
+        return new TrackingFrame(time, xPos, yPos);
     }
 
-    public void addTrackingPoint(float xPos, float yPos) {
-        currTrackingFrame.coordinate.addPoint(xPos, yPos);
+    void addTrackingFrame(long time, TrackingFrame trackingFrame) {
+        time = time - startRecordingTime;
+        trackingFrame.endTime = time;
+        trackingFrames.add(trackingFrame);
     }
 
-    public List<TrackingFrame> getTrackingFrames() {
+    SortedSet<TrackingFrame> getTrackingFrames() {
         return trackingFrames;
     }
 
-    class TrackingFrame implements Serializable {
+    class TrackingFrame implements Serializable, Comparable<TrackingFrame> {
         long startTime, endTime;
         Coordinate coordinate;
         String player;
@@ -106,6 +93,18 @@ public class TrackingSession implements Serializable {
             this.startTime = startTime;
             this.coordinate = new Coordinate(x, y);
         }
+
+        @Override
+        public int compareTo(TrackingFrame other) {
+            long diff = this.startTime - other.startTime;
+            if (diff < 0) {
+                return -1;
+            } else if (diff == 0) {
+                return 0;
+            } else {
+                return 1;
+            }
+        }
     }
 
     class Coordinate implements Serializable {
@@ -113,20 +112,24 @@ public class TrackingSession implements Serializable {
         int keyframe, occluded, outside;
         long frame;
 
-        Coordinate(float minX, float minY, float maxX, float maxY, long frame) {
+        Coordinate(float minX, float minY, float maxX, float maxY) {
             this.minX = minX;
             this.minY = minY;
             this.maxX = maxX;
             this.maxY = maxY;
-            this.frame = frame;
         }
 
         Coordinate(float x, float y) {
-            this(x, y, x, y, 0);
+            this(x, y, x, y);
         }
 
         Coordinate(Coordinate other, long frame) {
-            this(other.minX, other.minY, other.maxX, other.maxY, frame);
+            this(other.minX, other.minY, other.maxX, other.maxY);
+            this.frame = frame;
+        }
+
+        Coordinate(Coordinate other) {
+            this(other.minX, other.minY, other.maxX, other.maxY);
         }
 
         void addPoint(float newX, float newY) {
@@ -135,11 +138,48 @@ public class TrackingSession implements Serializable {
             } else if (newX > maxX) {
                 maxX = newX;
             }
-                    if (newY < minY) {
+            if (newY < minY) {
                 minY = newY;
             } else if (newY > maxY) {
                 maxY = newY;
             }
+        }
+
+        void rotate(int rotation, int width, int height) {
+            Coordinate temp = new Coordinate(this);
+
+            switch (rotation % 360) {
+                // phone is rotated to the left
+                case 0:
+                    this.minX = temp.minY;
+                    this.maxX = temp.maxY;
+                    this.minY = height - temp.minX;
+                    this.maxY = height - temp.maxX;
+                    break;
+                // phone is in normal, vertical orientation
+                case 90:
+                    break;
+                // phone is rotated to the right
+                case 180:
+                    this.minX = width - temp.minY;
+                    this.maxX = width - temp.maxY;
+                    this.minY = temp.maxX;
+                    this.maxY = temp.minX;
+                    break;
+                // phone is upside-down
+                case 270:
+                    this.minX = width - temp.minY;
+                    this.maxX = width - temp.maxY;
+                    this.minY = height - temp.maxX;
+                    this.maxY = height - temp.minX;
+                    break;
+                default:
+                    Log.e("MY_TAG", "Coordinate.rotate: Rotate value is not a multiple of 90");
+            }
+        }
+
+        boolean contains(float x, float y) {
+            return x > minX && x < maxX && y > minY && y < maxY;
         }
 
         @Override
