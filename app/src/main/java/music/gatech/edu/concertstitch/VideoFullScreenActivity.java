@@ -148,13 +148,11 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
         Log.e("width", SCREEN_WIDTH + "");
         Log.e("height", SCREEN_HEIGHT + "");
 
-        if (annotationsMap != null) {
-            if (annotationsMap.get("demo").get(currVidFrame) != null) {
-
-                Log.e("ZZZZ", annotationsMap.get("demo").get(currVidFrame)[4][2] + "");
-
-            }
-        }
+//        if (annotationsMap != null) {
+//            if (annotationsMap.get("demo") != null && annotationsMap.get("demo").get(currVidFrame) != null) {
+//                Log.e("ZZZZ", annotationsMap.get("demo").get(currVidFrame)[4][2] + "");
+//            }
+//        }
 
 
         if (controller.isShowing()) {
