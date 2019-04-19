@@ -32,14 +32,11 @@ public class ClassifyActivity extends AppCompatActivity {
     private SortedSet<TrackingSession.TrackingFrame> trackingFrames;
     Iterator<TrackingSession.TrackingFrame> iterator;
     private TrackingSession.TrackingFrame currTrackingFrame;
-    private String videoPath;
-    private Bitmap currBitmap;
     private Paint paint;
     private int currIndex;
 
     private ImageView framePreview;
     private Button nextFrameBtn;
-    private Spinner instrumentSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +45,7 @@ public class ClassifyActivity extends AppCompatActivity {
 
         Bundle args = getIntent().getBundleExtra("bundle");
         trackingSession = (TrackingSession) args.getSerializable("trackingSession");
-        videoPath = args.getString("videoPath");
+        String videoPath = args.getString("videoPath");
 
         framePreview = findViewById(R.id.framePreview);
         nextFrameBtn = findViewById(R.id.nextFrameBtn);
@@ -80,7 +77,7 @@ public class ClassifyActivity extends AppCompatActivity {
             }
         });
 
-        instrumentSpinner = findViewById(R.id.instrumentSpinner);
+        Spinner instrumentSpinner = findViewById(R.id.instrumentSpinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.instruments_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -111,14 +108,13 @@ public class ClassifyActivity extends AppCompatActivity {
         } else if (currIndex == trackingFrames.size() - 1) {
             nextFrameBtn.setText("Submit");
         }
+        
         currTrackingFrame = iterator.next();
-        currBitmap = media.getFrameAtTime(currTrackingFrame.startTime * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
-        framePreview.setImageBitmap(currBitmap);
-
+        Bitmap bitmapFromVideo = media.getFrameAtTime(currTrackingFrame.startTime * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
         TrackingSession.Coordinate coord = currTrackingFrame.coordinate;
-        Bitmap tempBitmap = Bitmap.createBitmap(currBitmap.getWidth(), currBitmap.getHeight(), Bitmap.Config.RGB_565);
+        Bitmap tempBitmap = Bitmap.createBitmap(bitmapFromVideo.getWidth(), bitmapFromVideo.getHeight(), Bitmap.Config.RGB_565);
         Canvas tempCanvas = new Canvas(tempBitmap);
-        tempCanvas.drawBitmap(currBitmap, 0, 0, null);
+        tempCanvas.drawBitmap(bitmapFromVideo, 0, 0, null);
         tempCanvas.drawRect(new RectF(coord.minX, coord.maxY, coord.maxX, coord.minY), paint);
         framePreview.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
     }
