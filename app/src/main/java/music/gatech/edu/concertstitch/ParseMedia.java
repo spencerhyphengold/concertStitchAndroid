@@ -133,7 +133,7 @@ public class ParseMedia {
 
     }
 
-    public static Map<String, HashMap<Integer, double[][]>> getAnnotationsLocal(String annotationsFilePath) {
+    public static Map<String, HashMap<Integer, double[][]>> getAnnotationsLocal(String annotationsFilePath, int aspectWidth, int aspectHeight) {
         Document doc = loadDocumentLocal(annotationsFilePath);
         doc.getDocumentElement().normalize();
 
@@ -159,13 +159,13 @@ public class ParseMedia {
                     final double xbr = Double.parseDouble(boxAttributes.getNamedItem("xbr").getNodeValue());
                     final double ybr = Double.parseDouble(boxAttributes.getNamedItem("ybr").getNodeValue());
 
-                    final double width = (xbr - xtl) / 1280.0;
-                    final double height = (ybr - ytl) / 720.0;
+                    final double width = (xbr - xtl) / (double) aspectWidth;
+                    final double height = (ybr - ytl) / (double) aspectHeight;
 
                     int instrumentIndex = Arrays.binarySearch(DEMO_LABELS, instrumentLabel);
                     if (annotationForCurrVid.get(frame) != null) {
-                        annotationForCurrVid.get(frame)[instrumentIndex][0] = xtl / 1280;
-                        annotationForCurrVid.get(frame)[instrumentIndex][1] = ytl / 720;
+                        annotationForCurrVid.get(frame)[instrumentIndex][0] = xtl / aspectWidth;
+                        annotationForCurrVid.get(frame)[instrumentIndex][1] = ytl / aspectHeight;
                         annotationForCurrVid.get(frame)[instrumentIndex][2] = width;
                         annotationForCurrVid.get(frame)[instrumentIndex][3] = height;
                     } else {
@@ -175,8 +175,8 @@ public class ParseMedia {
                         }
 
                         annotationForCurrVid.put(frame, tempArr);
-                        annotationForCurrVid.get(frame)[instrumentIndex][0] = xtl / 1280;
-                        annotationForCurrVid.get(frame)[instrumentIndex][1] = ytl / 720;
+                        annotationForCurrVid.get(frame)[instrumentIndex][0] = xtl / aspectWidth;
+                        annotationForCurrVid.get(frame)[instrumentIndex][1] = ytl / aspectHeight;
                         annotationForCurrVid.get(frame)[instrumentIndex][2] = width;
                         annotationForCurrVid.get(frame)[instrumentIndex][3] = height;
                     }
