@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class TrackingSession implements Serializable {
@@ -139,6 +140,13 @@ public class TrackingSession implements Serializable {
             } else if (newY > maxY) {
                 maxY = newY;
             }
+        }
+
+        @Override
+        public String toString() {
+            return String.format(Locale.ENGLISH,
+                    "<box keyframe=\"%d\" occluded=\"%d\" outside=\"%d\" ybr=\"%f\" xbr=\"%f\" ytl=\"%f\" xtl=\"%f\" frame=\"%d\"/>",
+                    keyframe, occluded, outside, minY, maxX, maxY, minX, frame);
         }
     }
 }
