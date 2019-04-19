@@ -16,13 +16,15 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.io.File;
-import java.util.List;
+import java.util.Iterator;
+import java.util.SortedSet;
 
 public class ClassifyActivity extends AppCompatActivity {
 
     private MediaMetadataRetriever media;
     private TrackingSession trackingSession;
-    private List<TrackingSession.TrackingFrame> trackingFrames;
+    private SortedSet<TrackingSession.TrackingFrame> trackingFrames;
+    Iterator<TrackingSession.TrackingFrame> iterator;
     private TrackingSession.TrackingFrame currTrackingFrame;
     private String videoPath;
     private Bitmap currImage;
@@ -53,6 +55,7 @@ public class ClassifyActivity extends AppCompatActivity {
             return;
         }
         currIndex = 0;
+        iterator = trackingFrames.iterator();
         updatePage();
 
         nextFrameBtn.setOnClickListener(new View.OnClickListener() {
@@ -72,8 +75,7 @@ public class ClassifyActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int index, long id) {
                 String playerLabel = adapterView.getItemAtPosition(index).toString();
-                trackingSession.addPlayerLabel(currIndex, playerLabel);
-                Toast.makeText(ClassifyActivity.this, Integer.toString(trackingSession.playerMap.get(playerLabel).size()), Toast.LENGTH_SHORT).show();
+                trackingSession.addPlayerLabel(currTrackingFrame, playerLabel);
             }
 
             @Override
@@ -95,8 +97,7 @@ public class ClassifyActivity extends AppCompatActivity {
         } else if (currIndex == trackingFrames.size() - 1) {
             nextFrameBtn.setText("Submit");
         }
-        currTrackingFrame = trackingFrames.get(currIndex);
-        Toast.makeText(this, Float.toString(currTrackingFrame.startTime), Toast.LENGTH_SHORT).show();
+        currTrackingFrame = iterator.next();
         currImage = media.getFrameAtTime(currTrackingFrame.startTime * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
         framePreview.setImageBitmap(currImage);
     }

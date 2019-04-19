@@ -13,10 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class TrackingSession implements Serializable {
-    private List<TrackingFrame> trackingFrames;
-    private TrackingFrame currTrackingFrame;
+    private SortedSet<TrackingFrame> trackingFrames;
     int id;
     int name;
     int size;
@@ -35,9 +36,8 @@ public class TrackingSession implements Serializable {
     int frameRate;
 
 
-    public TrackingSession() {
-        this.trackingFrames = new ArrayList<>();
-        this.currTrackingFrame = null;
+    TrackingSession() {
+        this.trackingFrames = new TreeSet<>();
         this.id = 0;
         this.name = 0;
         this.mode = "interpolation";
@@ -49,55 +49,46 @@ public class TrackingSession implements Serializable {
         this.playerMap = new HashMap<>();
     }
 
-    public void addVideoResult(VideoResult result) {
+    void addVideoResult(VideoResult result) {
         this.source = result.getFile();
         this.width = result.getSize().getWidth();
         this.height = result.getSize().getHeight();
         this.frameRate = result.getVideoFrameRate();
     }
 
-    public void addPlayerLabel(int index, String player) {
-        currTrackingFrame = trackingFrames.get(index);
+    void addPlayerLabel(TrackingFrame trackingFrame, String player) {
         List<Coordinate> coordinates = playerMap.get(player);
         if (coordinates == null) {
             coordinates = new ArrayList<>();
             playerMap.put(player, coordinates);
         }
 
-        long startFrame = Math.round(currTrackingFrame.startTime / 1000. * this.frameRate);
-        long endFrame = Math.round(currTrackingFrame.endTime  / 1000. * this.frameRate);
+        long startFrame = Math.round(trackingFrame.startTime / 1000. * this.frameRate);
+        long endFrame = Math.round(trackingFrame.endTime  / 1000. * this.frameRate);
 
-        Coordinate originalCoordinate = currTrackingFrame.coordinate;
-        for (long i = startFrame; i < endFrame; i += 1) {
+        Coordinate originalCoordinate = trackingFrame.coordinate;
+        for (long i = startFrame; i < endFrame; i++) {
             Coordinate coordinate = new Coordinate(originalCoordinate, i);
             coordinates.add(coordinate);
         }
     }
 
-    public void finishTracking() {
-        if (this.currTrackingFrame != null) {
-            currTrackingFrame.endTime = System.currentTimeMillis() - startRecordingTime;
-        }
-    }
-
-    public void addTrackingFrame(long time, float xPos, float yPos) {
+    TrackingFrame createTrackingFrame(long time, float xPos, float yPos) {
         time = time - startRecordingTime;
-        if (currTrackingFrame != null) {
-            currTrackingFrame.endTime = time;
-        }
-        currTrackingFrame = new TrackingFrame(time, xPos, yPos);
-        trackingFrames.add(currTrackingFrame);
+        return new TrackingFrame(time, xPos, yPos);
     }
 
-    public void addTrackingPoint(float xPos, float yPos) {
-        currTrackingFrame.coordinate.addPoint(xPos, yPos);
+    void addTrackingFrame(long time, TrackingFrame trackingFrame) {
+        time = time - startRecordingTime;
+        trackingFrame.endTime = time;
+        trackingFrames.add(trackingFrame);
     }
 
-    public List<TrackingFrame> getTrackingFrames() {
+    SortedSet<TrackingFrame> getTrackingFrames() {
         return trackingFrames;
     }
 
-    class TrackingFrame implements Serializable {
+    class TrackingFrame implements Serializable, Comparable<TrackingFrame> {
         long startTime, endTime;
         Coordinate coordinate;
         String player;
@@ -105,6 +96,18 @@ public class TrackingSession implements Serializable {
         TrackingFrame(long startTime, float x, float y) {
             this.startTime = startTime;
             this.coordinate = new Coordinate(x, y);
+        }
+
+        @Override
+        public int compareTo(TrackingFrame other) {
+            long diff = this.startTime - other.startTime;
+            if (diff < 0) {
+                return -1;
+            } else if (diff == 0) {
+                return 0;
+            } else {
+                return 1;
+            }
         }
     }
 
@@ -140,6 +143,10 @@ public class TrackingSession implements Serializable {
             } else if (newY > maxY) {
                 maxY = newY;
             }
+        }
+
+        boolean contains(float x, float y) {
+            return x > minX && x < maxX && y > minY && y < maxY;
         }
 
         @Override
