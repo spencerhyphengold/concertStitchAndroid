@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -30,7 +31,7 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
     private Path path;
     private TrackingCanvas trackingCanvas;
     private TrackingSession.TrackingFrame currentFrame;
-    private Map<TrackingSession.TrackingFrame, Path> frameToPathMap;
+    private Map<TrackingSession.TrackingFrame, RectF> frameToRectMap;
     private Set<TrackingSession.TrackingFrame> activeFrames;
 
     private boolean isActive, isDrawing;
@@ -38,16 +39,17 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
 
     public static class TrackingCanvas extends GestureOverlayView {
         Paint paint;
-        Set<Path> paths;
+        Path path;
+        Set<RectF> rectangles;
 
         public TrackingCanvas(android.content.Context context, android.util.AttributeSet attributes) {
             super(context, attributes);
             this.setWillNotDraw(true);
-            paths = new HashSet<>();
+            rectangles = new HashSet<>();
         }
 
         public void initialize(Path path) {
-            paths.add(path);
+            this.path = path;
             this.paint = new Paint();
             paint.setAntiAlias(true);
             paint.setColor(Color.WHITE);
@@ -59,8 +61,9 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
         @Override
         public void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-            for (Path currPath : paths) {
-                canvas.drawPath(currPath, paint);
+            canvas.drawPath(path, paint);
+            for (RectF rect : rectangles) {
+                canvas.drawRect(rect, paint);
             }
         }
     }
@@ -77,20 +80,20 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        trackingSession = new TrackingSession();
-        frameToPathMap = new HashMap<>();
+        frameToRectMap = new HashMap<>();
         activeFrames = new HashSet<>();
         path = new Path();
 
         trackingCanvas = getView().findViewById(R.id.trackingCanvas);
         trackingCanvas.initialize(path);
         trackingCanvas.setOnTouchListener(this);
+
+        trackingSession = new TrackingSession();
     }
 
     void onStartTracking() {
         isActive = true;
         trackingCanvas.setWillNotDraw(false);
-        trackingSession = new TrackingSession();
     }
 
     TrackingSession onFinishTracking() {
@@ -131,12 +134,15 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
             case MotionEvent.ACTION_UP:
                 if (isDrawing) {
                     if (activeFrames.size() > 5) {
-                        Toast.makeText(getContext(), "Cannot draw more than 5 circles. Tap to erase.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Cannot draw more than 5 boxes. Tap to erase.", Toast.LENGTH_SHORT).show();
                     } else {
+                        TrackingSession.Coordinate coord = currentFrame.coordinate;
+                        RectF rect = new RectF(coord.minX, coord.maxY, coord.maxX, coord.minY);
+                        trackingCanvas.rectangles.add(rect);
                         activeFrames.add(currentFrame);
-                        frameToPathMap.put(currentFrame, path);
+                        frameToRectMap.put(currentFrame, rect);
                         path = new Path();
-                        trackingCanvas.paths.add(path);
+                        trackingCanvas.path = path;
                     }
                 } else {
                     Iterator<TrackingSession.TrackingFrame> iterator = activeFrames.iterator();
@@ -145,8 +151,8 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
                         if (frame.coordinate.contains(xPos, yPos)) {
                             iterator.remove();
                             trackingSession.addTrackingFrame(time, frame);
-                            Path pathToDelete = frameToPathMap.get(frame);
-                            trackingCanvas.paths.remove(pathToDelete);
+                            RectF rectToDelete = frameToRectMap.get(frame);
+                            trackingCanvas.rectangles.remove(rectToDelete);
                         }
                     }
                 }

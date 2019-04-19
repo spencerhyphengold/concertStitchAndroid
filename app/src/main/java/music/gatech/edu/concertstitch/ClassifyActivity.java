@@ -4,6 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.os.Environment;
@@ -26,13 +32,11 @@ public class ClassifyActivity extends AppCompatActivity {
     private SortedSet<TrackingSession.TrackingFrame> trackingFrames;
     Iterator<TrackingSession.TrackingFrame> iterator;
     private TrackingSession.TrackingFrame currTrackingFrame;
-    private String videoPath;
-    private Bitmap currImage;
+    private Paint paint;
     private int currIndex;
 
     private ImageView framePreview;
     private Button nextFrameBtn;
-    private Spinner instrumentSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,12 +45,18 @@ public class ClassifyActivity extends AppCompatActivity {
 
         Bundle args = getIntent().getBundleExtra("bundle");
         trackingSession = (TrackingSession) args.getSerializable("trackingSession");
-        videoPath = args.getString("videoPath");
+        String videoPath = args.getString("videoPath");
 
         framePreview = findViewById(R.id.framePreview);
         nextFrameBtn = findViewById(R.id.nextFrameBtn);
         media = new MediaMetadataRetriever();
         media.setDataSource(videoPath);
+        paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setColor(Color.WHITE);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(10f);
 
         trackingFrames = trackingSession.getTrackingFrames();
         if (trackingFrames.size() == 0) {
@@ -54,6 +64,7 @@ public class ClassifyActivity extends AppCompatActivity {
             startActivity(intent);
             return;
         }
+
         currIndex = 0;
         iterator = trackingFrames.iterator();
         updatePage();
@@ -66,7 +77,7 @@ public class ClassifyActivity extends AppCompatActivity {
             }
         });
 
-        instrumentSpinner = findViewById(R.id.instrumentSpinner);
+        Spinner instrumentSpinner = findViewById(R.id.instrumentSpinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.instruments_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -97,8 +108,14 @@ public class ClassifyActivity extends AppCompatActivity {
         } else if (currIndex == trackingFrames.size() - 1) {
             nextFrameBtn.setText("Submit");
         }
+        
         currTrackingFrame = iterator.next();
-        currImage = media.getFrameAtTime(currTrackingFrame.startTime * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
-        framePreview.setImageBitmap(currImage);
+        Bitmap bitmapFromVideo = media.getFrameAtTime(currTrackingFrame.startTime * 1000, MediaMetadataRetriever.OPTION_CLOSEST);
+        TrackingSession.Coordinate coord = currTrackingFrame.coordinate;
+        Bitmap tempBitmap = Bitmap.createBitmap(bitmapFromVideo.getWidth(), bitmapFromVideo.getHeight(), Bitmap.Config.RGB_565);
+        Canvas tempCanvas = new Canvas(tempBitmap);
+        tempCanvas.drawBitmap(bitmapFromVideo, 0, 0, null);
+        tempCanvas.drawRect(new RectF(coord.minX, coord.maxY, coord.maxX, coord.minY), paint);
+        framePreview.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
     }
 }
