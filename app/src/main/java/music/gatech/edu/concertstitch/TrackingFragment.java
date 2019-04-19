@@ -38,7 +38,6 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
 
     public static class TrackingCanvas extends GestureOverlayView {
         Paint paint;
-        Path path;
         Set<Path> paths;
 
         public TrackingCanvas(android.content.Context context, android.util.AttributeSet attributes) {
@@ -48,7 +47,6 @@ public class TrackingFragment extends Fragment implements View.OnTouchListener {
         }
 
         public void initialize(Path path) {
-            this.path = path;
             paths.add(path);
             this.paint = new Paint();
             paint.setAntiAlias(true);
