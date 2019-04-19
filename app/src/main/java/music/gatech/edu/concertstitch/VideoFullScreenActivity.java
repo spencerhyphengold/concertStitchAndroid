@@ -511,7 +511,7 @@ public class VideoFullScreenActivity extends AppCompatActivity implements Surfac
 
     @Override
     public void goHome() {
-        if (!VIDEO_NAMES[0].equals(currentVideoName)) {
+        if (!currentVideoName.equals("demo") && !VIDEO_NAMES[0].equals(currentVideoName)) {
             shapeFrame.removeAllViews();
             videoPlayer2.setDisplay(null);
             videoPlayer2.release();
